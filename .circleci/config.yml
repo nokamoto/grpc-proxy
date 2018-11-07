@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/nokamoto/grpc-proxy
+    steps:
+      - checkout
+      - run:
+          name: go get dependencies
+          command: |
+            go get -u golang.org/x/lint/golint
+            go get -u github.com/golang/dep/cmd/dep
+      - run: test -z "$(gofmt -l .)"
+      - run: golint -set_exit_status .
+      - run: dep ensure -vendor-only=true
+      - run: go test .
+workflows:
+  version: 2
+  ci:
+    jobs:
+      - test
