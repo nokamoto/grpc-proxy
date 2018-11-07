@@ -7,6 +7,20 @@ jobs:
     steps:
       - checkout
       - run:
+          name: get prototool
+          command: |
+            curl -sSL https://github.com/uber/prototool/releases/download/v1.0.0/prototool-$(uname -s)-$(uname -m) -o ./prototool
+            chmod +x ./prototool
+      - run: ./prototool format -d examples
+      - run:
+          name: get protoc
+          command: |
+            curl -L https://github.com/google/protobuf/releases/download/v3.3.0/protoc-3.3.0-linux-x86_64.zip -o ./protoc.zip
+            unzip ./protoc.zip -d /usr/local/bin
+      - run:
+          working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples
+          command: make
+      - run:
           name: go get dependencies
           command: |
             go get -u golang.org/x/lint/golint
