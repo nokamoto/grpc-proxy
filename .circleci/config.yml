@@ -2,7 +2,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.11
+      - image: golang:1.11
     working_directory: /go/src/github.com/nokamoto/grpc-proxy
     steps:
       - checkout
@@ -16,23 +16,15 @@ jobs:
           name: get protoc
           command: |
             curl -L https://github.com/google/protobuf/releases/download/v3.3.0/protoc-3.3.0-linux-x86_64.zip -o ./protoc.zip
-            unzip ./protoc.zip -d .
+            unzip ./protoc.zip -d /usr/local bin/protoc
             go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
             go get -u google.golang.org/grpc
       - run:
           working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/empty-package
-          environment:
-            PATH: /go/src/github.com/nokamoto/grpc-proxy/bin:/go/bin:$PATH
-          command: |
-            protoc --include_imports --include_source_info example.proto --descriptor_set_out example.pb
-            protoc --go_out=plugins=grpc:. example.proto
+          command: make
       - run:
           working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/ping
-          environment:
-            PATH: /go/src/github.com/nokamoto/grpc-proxy/bin:/go/bin:$PATH
-          command: |
-            protoc --include_imports --include_source_info example.proto --descriptor_set_out example.pb
-            protoc --go_out=plugins=grpc:. example.proto
+          command: make
       - run:
           name: go get dependencies
           command: |
