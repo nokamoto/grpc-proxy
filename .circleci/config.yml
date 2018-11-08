@@ -18,7 +18,10 @@ jobs:
             curl -L https://github.com/google/protobuf/releases/download/v3.3.0/protoc-3.3.0-linux-x86_64.zip -o ./protoc.zip
             unzip ./protoc.zip -d /usr/local/bin
       - run:
-          working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples
+          working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/empty-package
+          command: make
+      - run:
+          working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/ping
           command: make
       - run:
           name: go get dependencies
