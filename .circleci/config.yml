@@ -17,16 +17,22 @@ jobs:
           command: |
             curl -L https://github.com/google/protobuf/releases/download/v3.3.0/protoc-3.3.0-linux-x86_64.zip -o ./protoc.zip
             unzip ./protoc.zip -d .
+            go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+            go get -u google.golang.org/grpc
       - run:
           working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/empty-package
           environment:
             PATH: /go/src/github.com/nokamoto/grpc-proxy:$PATH
-          command: make
+          command: |
+            protoc --include_imports --include_source_info example.proto --descriptor_set_out example.pb
+            protoc --go_out=plugins=grpc:. example.proto
       - run:
           working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/ping
           environment:
             PATH: /go/src/github.com/nokamoto/grpc-proxy:$PATH
-          command: make
+          command: |
+            protoc --include_imports --include_source_info example.proto --descriptor_set_out example.pb
+            protoc --go_out=plugins=grpc:. example.proto
       - run:
           name: go get dependencies
           command: |
