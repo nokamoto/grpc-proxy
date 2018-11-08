@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package ping;
+
+message Ping {}
+
+message Pong {}
+
+service PingService {
+  rpc Send(Ping) returns (Pong);
+  rpc SendStreamC(stream Ping) returns (Pong);
+  rpc SendStreamS(Ping) returns (stream Pong);
+  rpc SendStreamB(stream Ping) returns (stream Pong);
+}

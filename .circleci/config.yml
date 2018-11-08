@@ -2,15 +2,17 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.11
+      - image: nokamoto13/ci-grpc-go:v0
     working_directory: /go/src/github.com/nokamoto/grpc-proxy
     steps:
       - checkout
+      - run: prototool format -d examples
       - run:
-          name: go get dependencies
-          command: |
-            go get -u golang.org/x/lint/golint
-            go get -u github.com/golang/dep/cmd/dep
+          working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/empty-package
+          command: make
+      - run:
+          working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/ping
+          command: make
       - run: test -z "$(gofmt -l .)"
       - run: golint -set_exit_status .
       - run: dep ensure -vendor-only=true
