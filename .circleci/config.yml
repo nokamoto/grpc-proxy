@@ -22,14 +22,14 @@ jobs:
       - run:
           working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/empty-package
           environment:
-            PATH: /go/src/github.com/nokamoto/grpc-proxy/bin:$PATH
+            PATH: /go/src/github.com/nokamoto/grpc-proxy/bin:/go/bin:$PATH
           command: |
             protoc --include_imports --include_source_info example.proto --descriptor_set_out example.pb
             protoc --go_out=plugins=grpc:. example.proto
       - run:
           working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/ping
           environment:
-            PATH: /go/src/github.com/nokamoto/grpc-proxy/bin:$PATH
+            PATH: /go/src/github.com/nokamoto/grpc-proxy/bin:/go/bin:$PATH
           command: |
             protoc --include_imports --include_source_info example.proto --descriptor_set_out example.pb
             protoc --go_out=plugins=grpc:. example.proto
