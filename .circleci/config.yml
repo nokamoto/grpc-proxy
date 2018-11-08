@@ -2,35 +2,17 @@ version: 2
 jobs:
   test:
     docker:
-      - image: golang:1.11
+      - image: nokamoto13/ci-grpc-go:v0
     working_directory: /go/src/github.com/nokamoto/grpc-proxy
     steps:
       - checkout
-      - run:
-          name: get prototool
-          command: |
-            curl -sSL https://github.com/uber/prototool/releases/download/v1.0.0/prototool-$(uname -s)-$(uname -m) -o ./prototool
-            chmod +x ./prototool
-      - run: ./prototool format -d examples
-      - run:
-          name: get protoc
-          command: |
-            apt-get install unzip
-            curl -L https://github.com/google/protobuf/releases/download/v3.3.0/protoc-3.3.0-linux-x86_64.zip -o ./protoc.zip
-            unzip ./protoc.zip -d /usr/local bin/protoc
-            go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
-            go get -u google.golang.org/grpc
+      - run: prototool format -d examples
       - run:
           working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/empty-package
           command: make
       - run:
           working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/ping
           command: make
-      - run:
-          name: go get dependencies
-          command: |
-            go get -u golang.org/x/lint/golint
-            go get -u github.com/golang/dep/cmd/dep
       - run: test -z "$(gofmt -l .)"
       - run: golint -set_exit_status .
       - run: dep ensure -vendor-only=true
