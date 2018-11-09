@@ -17,8 +17,39 @@ jobs:
       - run: golint -set_exit_status .
       - run: dep ensure -vendor-only=true
       - run: go test .
+  build-test:
+    docker:
+      - image: docker:18.06.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: docker build .
+  build:
+    docker:
+      - image: docker:18.06.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: docker build -t nokamoto13/grpc-proxy:latest .
+      - run: 
+          name: docker push
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push nokamoto13/grpc-proxy:latest
 workflows:
   version: 2
   ci:
     jobs:
       - test
+      - build-test:
+          filters:
+            branches:
+              ignore: master
+      - build:
+          filters:
+            branches:
+              only: master
+          requires:
+            - test
