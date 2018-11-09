@@ -1,12 +1,9 @@
 package main
 
 import (
-	"fmt"
 	pb "github.com/nokamoto/grpc-proxy/examples/ping"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"io"
-	"net"
 )
 
 type pingService struct{}
@@ -55,26 +52,4 @@ func (s *pingService) SendStreamB(stream pb.PingService_SendStreamBServer) error
 			return err
 		}
 	}
-}
-
-func withPingServer(f func() error) error {
-	port := 9002
-
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
-		return err
-	}
-
-	opts := []grpc.ServerOption{}
-	srv := grpc.NewServer(opts...)
-	svc := &pingService{}
-
-	pb.RegisterPingServiceServer(srv, svc)
-
-	go func() {
-		srv.Serve(lis)
-	}()
-	defer srv.GracefulStop()
-
-	return f()
 }
