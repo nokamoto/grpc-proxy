@@ -5,5 +5,5 @@ import (
 )
 
 type cluster interface {
-	unary(context.Context, string, *message) (*message, error)
+	invokeUnary(context.Context, *message, string) (*message, error)
 }

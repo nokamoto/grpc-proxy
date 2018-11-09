@@ -2,19 +2,19 @@ package main
 
 import (
 	"fmt"
-	"sync"
 	"golang.org/x/net/context"
+	"sync"
 )
 
 type clusterRoundRobin struct {
-	mu sync.Mutex
+	mu      sync.Mutex
 	proxies []*proxy
-	next int
+	next    int
 }
 
 func newClusterRoundRobin(c yamlCluster) (*clusterRoundRobin, error) {
 	proxies := make([]*proxy, 0)
-	
+
 	for _, address := range c.RoundRobin {
 		proxy, err := newProxy(address)
 		if err != nil {
@@ -31,11 +31,11 @@ func newClusterRoundRobin(c yamlCluster) (*clusterRoundRobin, error) {
 	return &clusterRoundRobin{proxies: proxies}, nil
 }
 
-func (c *clusterRoundRobin)unary(ctx context.Context, method string, m *message) (*message, error) {
+func (c *clusterRoundRobin) invokeUnary(ctx context.Context, m *message, method string) (*message, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	c.next = (c.next + 1) % len(c.proxies)
 
-	return c.proxies[c.next].unary(ctx, method, m)
+	return c.proxies[c.next].invokeUnary(ctx, m, method)
 }

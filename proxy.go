@@ -20,7 +20,7 @@ func newProxy(address string) (*proxy, error) {
 	return &proxy{con}, err
 }
 
-func (p *proxy) unary(ctx context.Context, method string, m *message) (*message, error) {
+func (p *proxy) invokeUnary(ctx context.Context, m *message, method string) (*message, error) {
 	rep := new(message)
 	err := p.con.Invoke(ctx, method, m, rep, grpc.CallCustomCodec(codec{}))
 	return rep, err

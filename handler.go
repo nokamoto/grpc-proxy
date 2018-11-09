@@ -12,14 +12,14 @@ func unaryProxyHandler(fullMethod string) func(interface{}, context.Context, fun
 			return nil, err
 		}
 		if interceptor == nil {
-			return srv.(proxyServer).unary(ctx, in)
+			return srv.(proxyServer).unary(ctx, in, fullMethod)
 		}
 		info := &grpc.UnaryServerInfo{
 			Server:     srv,
 			FullMethod: fullMethod,
 		}
 		handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.(proxyServer).unary(ctx, req.(*message))
+			return srv.(proxyServer).unary(ctx, req.(*message), fullMethod)
 		}
 		return interceptor(ctx, in, info, handler)
 	}
