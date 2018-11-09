@@ -1,13 +1,13 @@
 package main
 
 import (
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"fmt"
+	pb "github.com/nokamoto/grpc-proxy/examples/ping"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"net"
-	pb "github.com/nokamoto/grpc-proxy/examples/ping"
 )
 
 type pingService struct{}
@@ -42,7 +42,7 @@ func withPingServer(f func() error) error {
 
 	pb.RegisterPingServiceServer(srv, svc)
 
-	go func(){
+	go func() {
 		srv.Serve(lis)
 	}()
 	defer srv.GracefulStop()
