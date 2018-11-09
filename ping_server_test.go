@@ -1,13 +1,13 @@
 package main
 
 import (
-	"io"
 	"fmt"
 	pb "github.com/nokamoto/grpc-proxy/examples/ping"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"io"
 	"net"
 )
 
@@ -20,7 +20,7 @@ func (s *pingService) Send(_ context.Context, _ *pb.Ping) (*pb.Pong, error) {
 func (s *pingService) SendStreamC(stream pb.PingService_SendStreamCServer) error {
 	for {
 		_, err := stream.Recv()
-		
+
 		if err == io.EOF {
 			return stream.SendAndClose(&pb.Pong{})
 		}
