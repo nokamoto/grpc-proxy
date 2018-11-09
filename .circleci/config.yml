@@ -18,9 +18,6 @@ jobs:
       - run: dep ensure -vendor-only=true
       - run: go test .
   build-test:
-    branches:
-      ignore:
-        - master
     docker:
       - image: docker:18.06.0-ce-git
     steps:
@@ -29,9 +26,6 @@ jobs:
           docker_layer_caching: true
       - run: docker build .
   build:
-    branches:
-      only:
-        - master
     docker:
       - image: docker:18.06.0-ce-git
     steps:
@@ -49,5 +43,11 @@ workflows:
   ci:
     jobs:
       - test
-      - build-test
-      - build
+      - build-test:
+          filters:
+            branches:
+              ignore: master
+      - build:
+          filters:
+            branches:
+              only: master
