@@ -11,7 +11,7 @@ import (
 )
 
 func Test_router_ping_unary(t *testing.T) {
-	withServer(t, &pingService{}, func(ctx context.Context, cc *grpc.ClientConn) {
+	testWithPingServer(t, &pingService{}, func(ctx context.Context, cc *grpc.ClientConn) {
 		c := ping.NewPingServiceClient(cc)
 
 		_, err := c.Send(ctx, &ping.Ping{})
@@ -23,7 +23,7 @@ func Test_router_ping_unary(t *testing.T) {
 }
 
 func Test_router_ping_streamC(t *testing.T) {
-	withServer(t, &pingService{}, func(ctx context.Context, cc *grpc.ClientConn) {
+	testWithPingServer(t, &pingService{}, func(ctx context.Context, cc *grpc.ClientConn) {
 		c := ping.NewPingServiceClient(cc)
 
 		stream, err := c.SendStreamC(ctx)
@@ -48,7 +48,7 @@ func Test_router_ping_streamC(t *testing.T) {
 }
 
 func Test_router_ping_streamS(t *testing.T) {
-	withServer(t, &pingService{}, func(ctx context.Context, cc *grpc.ClientConn) {
+	testWithPingServer(t, &pingService{}, func(ctx context.Context, cc *grpc.ClientConn) {
 		c := ping.NewPingServiceClient(cc)
 
 		stream, err := c.SendStreamS(ctx, &ping.Ping{})
@@ -78,7 +78,7 @@ func Test_router_ping_streamS(t *testing.T) {
 }
 
 func Test_router_ping_streamB(t *testing.T) {
-	withServer(t, &pingService{}, func(ctx context.Context, cc *grpc.ClientConn) {
+	testWithPingServer(t, &pingService{}, func(ctx context.Context, cc *grpc.ClientConn) {
 		c := ping.NewPingServiceClient(cc)
 
 		stream, err := c.SendStreamB(ctx)

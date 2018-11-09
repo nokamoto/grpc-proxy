@@ -1,8 +1,12 @@
 syntax = "proto3";
 
-message A {}
+message A {
+  string a = 1;
+}
 
-message B {}
+message B {
+  string b = 1;
+}
 
 service Service {
   rpc Call(A) returns (B);

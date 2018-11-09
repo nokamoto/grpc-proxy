@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	empty "github.com/nokamoto/grpc-proxy/examples/empty-package"
 	ping "github.com/nokamoto/grpc-proxy/examples/ping"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -10,7 +11,7 @@ import (
 	"time"
 )
 
-func withPingServer(svc ping.PingServiceServer, f func() error) error {
+func withPingServer(svc ping.PingServiceServer, f func()) error {
 	port := 9002
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
@@ -28,11 +29,36 @@ func withPingServer(svc ping.PingServiceServer, f func() error) error {
 	}()
 	defer srv.GracefulStop()
 
-	return f()
+	f()
+
+	return nil
 }
 
-func withServer(t *testing.T, svc ping.PingServiceServer, f func(context.Context, *grpc.ClientConn)) {
-	err := withPingServer(svc, func() error {
+func withEmptyServer(svc empty.ServiceServer, f func()) error {
+	port := 9001
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		return err
+	}
+
+	opts := []grpc.ServerOption{}
+	srv := grpc.NewServer(opts...)
+
+	empty.RegisterServiceServer(srv, svc)
+
+	go func() {
+		srv.Serve(lis)
+	}()
+	defer srv.GracefulStop()
+
+	f()
+
+	return nil
+}
+
+func withProxyServer(t *testing.T, pb string, yml string, f func(context.Context, *grpc.ClientConn)) func() {
+	return func() {
 		port := 9000
 
 		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
@@ -42,12 +68,12 @@ func withServer(t *testing.T, svc ping.PingServiceServer, f func(context.Context
 
 		server := newGrpcServer()
 
-		desc, err := newDescriptor("examples/ping/example.pb")
+		desc, err := newDescriptor(pb)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		routes, clusters, err := newYaml("examples/ping/example.yaml")
+		routes, clusters, err := newYaml(yml)
 		if err != nil {
 			panic(err)
 		}
@@ -76,8 +102,19 @@ func withServer(t *testing.T, svc ping.PingServiceServer, f func(context.Context
 		defer cancel()
 
 		f(ctx, cc)
-		return nil
-	})
+	}
+}
+
+func testWithPingServer(t *testing.T, svc ping.PingServiceServer, f func(context.Context, *grpc.ClientConn)) {
+	err := withPingServer(svc, withProxyServer(t, "examples/ping/example.pb", "examples/ping/example.yaml", f))
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func testWithEmptyServer(t *testing.T, svc empty.ServiceServer, f func(context.Context, *grpc.ClientConn)) {
+	err := withEmptyServer(svc, withProxyServer(t, "examples/empty-package/example.pb", "examples/empty-package/example.yaml", f))
 
 	if err != nil {
 		t.Error(err)
