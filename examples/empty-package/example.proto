@@ -9,5 +9,5 @@ message B {
 }
 
 service Service {
-  rpc Call(A) returns (B);
+  rpc Reverse(A) returns (B);
 }

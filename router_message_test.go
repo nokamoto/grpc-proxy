@@ -11,7 +11,7 @@ func Test_router_message(t *testing.T) {
 	testWithEmptyServer(t, &emptyServer{}, func(ctx context.Context, cc *grpc.ClientConn) {
 		c := empty.NewServiceClient(cc)
 
-		b, err := c.Call(ctx, &empty.A{A: "abcdefg"})
+		b, err := c.Reverse(ctx, &empty.A{A: "abcdefg"})
 		if err != nil {
 			t.Error(err)
 		}

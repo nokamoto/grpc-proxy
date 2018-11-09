@@ -23,7 +23,7 @@ func Test_descriptor_empty_package(t *testing.T) {
 		t.Errorf("%s != %s", s, metadata)
 	}
 
-	method := "Call"
+	method := "Reverse"
 	if s := sds[0].Methods[0].MethodName; s != method {
 		t.Errorf("%s != %s", s, method)
 	}

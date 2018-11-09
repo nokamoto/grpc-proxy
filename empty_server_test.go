@@ -7,7 +7,7 @@ import (
 
 type emptyServer struct{}
 
-func (s *emptyServer) Call(_ context.Context, a *pb.A) (*pb.B, error) {
+func (s *emptyServer) Reverse(_ context.Context, a *pb.A) (*pb.B, error) {
 	b := ""
 
 	for _, v := range a.A {
