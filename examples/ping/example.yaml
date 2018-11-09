@@ -1,0 +1,10 @@
+routes:
+  - method:
+      prefix: /
+    cluster:
+      name: local
+
+clusters:
+  - name: local
+    round_robin:
+      - localhost:9002
