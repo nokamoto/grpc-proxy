@@ -21,7 +21,7 @@ func main() {
 
 	flag.Parse()
 
-	_, _, err := newYaml(*y)
+	routes, clusters, err := newYaml(*y)
 	if err != nil {
 		panic(err)
 	}
@@ -38,8 +38,13 @@ func main() {
 		panic(err)
 	}
 
+	router, err := newRouter(desc.FileDescriptorSet, routes, clusters)
+	if err != nil {
+		panic(err)
+	}
+
 	for _, sd := range desc.serviceDescriptors() {
-		server.RegisterService(sd, &grpcProxyServer{})
+		server.RegisterService(sd, router)
 	}
 
 	server.Serve(lis)
