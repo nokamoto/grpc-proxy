@@ -74,12 +74,16 @@ func methods(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto) []grpc.M
 }
 
 func streamB(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.MethodDescriptorProto) grpc.StreamDesc {
-	return grpc.StreamDesc{
+	desc := grpc.StreamDesc{
 		StreamName:    md.GetName(),
 		ClientStreams: true,
 		ServerStreams: true,
-		Handler:       streamBProxyHandler,
 	}
+
+	// todo: &desc may cause unexpected behavior.
+	desc.Handler = streamBProxyHandler(fullMethod(fd, sd, md), &desc)
+
+	return desc
 }
 
 func streamC(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.MethodDescriptorProto) grpc.StreamDesc {

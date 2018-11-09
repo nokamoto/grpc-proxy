@@ -52,3 +52,7 @@ func (c *clusterRoundRobin) invokeStreamC(stream proxyStreamCServer, desc *grpc.
 func (c *clusterRoundRobin) invokeStreamS(stream proxyStreamSServer, desc *grpc.StreamDesc, method string) error {
 	return c.nextProxy().invokeStreamS(stream, desc, method)
 }
+
+func (c *clusterRoundRobin) invokeStreamB(stream proxyStreamBServer, desc *grpc.StreamDesc, method string) error {
+	return c.nextProxy().invokeStreamB(stream, desc, method)
+}

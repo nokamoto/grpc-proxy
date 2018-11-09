@@ -5,8 +5,6 @@ import (
 	pb "github.com/nokamoto/grpc-proxy/examples/ping"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"io"
 	"net"
 )
@@ -41,8 +39,22 @@ func (s *pingService) SendStreamS(_ *pb.Ping, stream pb.PingService_SendStreamSS
 	return nil
 }
 
-func (s *pingService) SendStreamB(_ pb.PingService_SendStreamBServer) error {
-	return status.Error(codes.Unimplemented, "not implemented yet")
+func (s *pingService) SendStreamB(stream pb.PingService_SendStreamBServer) error {
+	for {
+		_, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		err = stream.Send(&pb.Pong{})
+		if err != nil {
+			return err
+		}
+	}
 }
 
 func withPingServer(f func() error) error {

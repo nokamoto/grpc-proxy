@@ -142,16 +142,23 @@ func Test_proxy_server_ping_streamB(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		err = stream.Send(&ping.Ping{})
-		if err != nil {
-			t.Fatal(err)
+		for i := 0; i < 10; i++ {
+			err = stream.Send(&ping.Ping{})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			_, err = stream.Recv()
+
+			s, _ := status.FromError(err)
+			if s.Code() != codes.OK {
+				t.Errorf("%v != %v %s", s.Code(), codes.OK, s.Message())
+			}
 		}
 
-		_, err = stream.Recv()
-
-		s, _ := status.FromError(err)
-		if s.Code() != codes.Unimplemented {
-			t.Errorf("%v != %v %s", s.Code(), codes.Unimplemented, s.Message())
+		err = stream.CloseSend()
+		if err != nil {
+			t.Error(err)
 		}
 	})
 }
