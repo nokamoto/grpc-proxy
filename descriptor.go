@@ -95,11 +95,15 @@ func streamC(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.M
 }
 
 func streamS(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.MethodDescriptorProto) grpc.StreamDesc {
-	return grpc.StreamDesc{
+	desc := grpc.StreamDesc{
 		StreamName:    md.GetName(),
 		ServerStreams: true,
-		Handler:       streamSProxyHandler,
 	}
+
+	// todo: &desc may cause unexpected behavior.
+	desc.Handler = streamSProxyHandler(fullMethod(fd, sd, md), &desc)
+
+	return desc
 }
 
 func streams(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto) []grpc.StreamDesc {

@@ -68,3 +68,43 @@ func (p *proxy) invokeStreamC(downstream proxyStreamCServer, desc *grpc.StreamDe
 		}
 	}
 }
+
+func (p *proxy) invokeStreamS(downstream proxyStreamSServer, desc *grpc.StreamDesc, method string) error {
+	// todo: timeout configuration.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	upstream, err := p.con.NewStream(ctx, desc, method, grpc.CallCustomCodec(codec{}))
+	if err != nil {
+		return grpc.Errorf(codes.Internal, "[grpc-proxy] stream s error: %s", err)
+	}
+
+	req := new(message)
+
+	err = downstream.RecvMsg(req)
+	if err != nil {
+		return err
+	}
+
+	err = upstream.SendMsg(req)
+	if err != nil {
+		return err
+	}
+
+	for {
+		m := new(message)
+		err = upstream.RecvMsg(m)
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		err = downstream.SendMsg(m)
+		if err != nil {
+			return err
+		}
+	}
+}

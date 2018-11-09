@@ -48,3 +48,7 @@ func (c *clusterRoundRobin) invokeUnary(ctx context.Context, m *message, method 
 func (c *clusterRoundRobin) invokeStreamC(stream proxyStreamCServer, desc *grpc.StreamDesc, method string) error {
 	return c.nextProxy().invokeStreamC(stream, desc, method)
 }
+
+func (c *clusterRoundRobin) invokeStreamS(stream proxyStreamSServer, desc *grpc.StreamDesc, method string) error {
+	return c.nextProxy().invokeStreamS(stream, desc, method)
+}
