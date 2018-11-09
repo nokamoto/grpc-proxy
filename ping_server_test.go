@@ -31,8 +31,14 @@ func (s *pingService) SendStreamC(stream pb.PingService_SendStreamCServer) error
 	}
 }
 
-func (s *pingService) SendStreamS(_ *pb.Ping, _ pb.PingService_SendStreamSServer) error {
-	return status.Error(codes.Unimplemented, "not implemented yet")
+func (s *pingService) SendStreamS(_ *pb.Ping, stream pb.PingService_SendStreamSServer) error {
+	for i := 0; i < 10; i++ {
+		err := stream.Send(&pb.Pong{})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *pingService) SendStreamB(_ pb.PingService_SendStreamBServer) error {

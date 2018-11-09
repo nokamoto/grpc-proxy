@@ -31,8 +31,10 @@ func streamCProxyHandler(fullMethod string, desc *grpc.StreamDesc) func(interfac
 	}
 }
 
-func streamSProxyHandler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(proxyServer).streamS(proxyStreamSServer{stream})
+func streamSProxyHandler(fullMethod string, desc *grpc.StreamDesc) func(interface{}, grpc.ServerStream) error {
+	return func(srv interface{}, stream grpc.ServerStream) error {
+		return srv.(proxyServer).streamS(proxyStreamSServer{stream}, desc, fullMethod)
+	}
 }
 
 func streamBProxyHandler(srv interface{}, stream grpc.ServerStream) error {

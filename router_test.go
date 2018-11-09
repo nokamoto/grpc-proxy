@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"io"
 	"net"
 	"testing"
 	"time"
@@ -111,11 +112,23 @@ func Test_proxy_server_ping_streamS(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		_, err = stream.Recv()
+		i := 0
+		for {
+			_, err = stream.Recv()
+			if err == io.EOF {
+				break
+			}
 
-		s, _ := status.FromError(err)
-		if s.Code() != codes.Unimplemented {
-			t.Errorf("%v != %v %s", s.Code(), codes.Unimplemented, s.Message())
+			i++
+
+			s, _ := status.FromError(err)
+			if s.Code() != codes.OK {
+				t.Errorf("%v != %v %s", s.Code(), codes.OK, s.Message())
+			}
+		}
+
+		if i != 10 {
+			t.Errorf("%d != 10", i)
 		}
 	})
 }
