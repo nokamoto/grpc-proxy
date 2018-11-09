@@ -25,8 +25,10 @@ func unaryProxyHandler(fullMethod string) func(interface{}, context.Context, fun
 	}
 }
 
-func streamCProxyHandler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(proxyServer).streamC(proxyStreamCServer{stream})
+func streamCProxyHandler(fullMethod string, desc *grpc.StreamDesc) func(interface{}, grpc.ServerStream) error {
+	return func(srv interface{}, stream grpc.ServerStream) error {
+		return srv.(proxyServer).streamC(proxyStreamCServer{stream}, desc, fullMethod)
+	}
 }
 
 func streamSProxyHandler(srv interface{}, stream grpc.ServerStream) error {

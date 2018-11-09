@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"sync"
 )
 
@@ -31,11 +32,19 @@ func newClusterRoundRobin(c yamlCluster) (*clusterRoundRobin, error) {
 	return &clusterRoundRobin{proxies: proxies}, nil
 }
 
-func (c *clusterRoundRobin) invokeUnary(ctx context.Context, m *message, method string) (*message, error) {
+func (c *clusterRoundRobin) nextProxy() *proxy {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	c.next = (c.next + 1) % len(c.proxies)
 
-	return c.proxies[c.next].invokeUnary(ctx, m, method)
+	return c.proxies[c.next]
+}
+
+func (c *clusterRoundRobin) invokeUnary(ctx context.Context, m *message, method string) (*message, error) {
+	return c.nextProxy().invokeUnary(ctx, m, method)
+}
+
+func (c *clusterRoundRobin) invokeStreamC(stream proxyStreamCServer, desc *grpc.StreamDesc, method string) error {
+	return c.nextProxy().invokeStreamC(stream, desc, method)
 }
