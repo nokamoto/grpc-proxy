@@ -1,13 +1,13 @@
 package main
 
 import (
-	"io"
 	"fmt"
 	ping "github.com/nokamoto/grpc-proxy/examples/ping"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"io"
 	"net"
 	"testing"
 	"time"
