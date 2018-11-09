@@ -9,4 +9,5 @@ type cluster interface {
 	invokeUnary(context.Context, *message, string) (*message, error)
 	invokeStreamC(proxyStreamCServer, *grpc.StreamDesc, string) error
 	invokeStreamS(proxyStreamSServer, *grpc.StreamDesc, string) error
+	invokeStreamB(proxyStreamBServer, *grpc.StreamDesc, string) error
 }
