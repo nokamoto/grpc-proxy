@@ -30,7 +30,7 @@ func (p *proxy) invokeUnary(ctx context.Context, m *message, method string) (*me
 }
 
 func (p *proxy) invokeStreamC(downstream proxyStreamCServer, desc *grpc.StreamDesc, method string) error {
-	// todo: timeout configuration
+	// todo: timeout configuration.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
