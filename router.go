@@ -61,8 +61,12 @@ func (r *router) unary(ctx context.Context, m *message, method string) (*message
 	return cluster.invokeUnary(ctx, m, method)
 }
 
-func (r *router) streamC(proxyStreamCServer) error {
-	return grpc.Errorf(codes.Unimplemented, "[grpc-proxy] unimplemented")
+func (r *router) streamC(stream proxyStreamCServer, desc *grpc.StreamDesc, method string) error {
+	cluster, ok := r.clusters[method]
+	if !ok {
+		return grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
+	}
+	return cluster.invokeStreamC(stream, desc, method)
 }
 
 func (r *router) streamS(proxyStreamSServer) error {
