@@ -16,9 +16,15 @@ func main() {
 	var (
 		port = flag.Int("p", 9000, "gRPC server port")
 		pb   = flag.String("pb", "", "file descriptor protocol buffers filepath")
+		y    = flag.String("yaml", "", "yaml configuration filepath")
 	)
 
 	flag.Parse()
+
+	_, _, err := newYaml(*y)
+	if err != nil {
+		panic(err)
+	}
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
