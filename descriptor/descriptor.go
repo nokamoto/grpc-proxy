@@ -9,11 +9,8 @@ import (
 	"io/ioutil"
 )
 
-type Descriptor struct {
-	*pb.FileDescriptorSet
-}
-
-func NewDescriptor(file string) (*Descriptor, error) {
+// NewDescriptor returns pb.FileDescriptorSet from the file descriptor protocol buffers file.
+func NewDescriptor(file string) (*pb.FileDescriptorSet, error) {
 	bytes, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -25,12 +22,13 @@ func NewDescriptor(file string) (*Descriptor, error) {
 		return nil, err
 	}
 
-	return &Descriptor{fds}, nil
+	return fds, nil
 }
 
-func (d *Descriptor) ServiceDescs() []*grpc.ServiceDesc {
+// ServiceDescs builds a list of grpc.ServiceDesc for server.Server from pb.FIleDescriptorSet.
+func ServiceDescs(fds *pb.FileDescriptorSet) []*grpc.ServiceDesc {
 	descs := make([]*grpc.ServiceDesc, 0)
-	for _, file := range d.File {
+	for _, file := range fds.File {
 		descs = append(descs, serviceDescs(file)...)
 	}
 	return descs
@@ -53,6 +51,7 @@ func serviceName(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto) stri
 	return name
 }
 
+// FullMethod returns a fully qualified service method name.
 func FullMethod(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.MethodDescriptorProto) string {
 	return fmt.Sprintf("/%s/%s", serviceName(fd, sd), md.GetName())
 }

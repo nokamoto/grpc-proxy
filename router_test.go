@@ -80,12 +80,12 @@ func withProxyServer(t *testing.T, pb string, yml string, f func(context.Context
 			panic(err)
 		}
 
-		router, err := newRouter(desc.FileDescriptorSet, routes, clusters)
+		router, err := newRouter(desc, routes, clusters)
 		if err != nil {
 			panic(err)
 		}
 
-		for _, sd := range desc.ServiceDescs() {
+		for _, sd := range descriptor.ServiceDescs(desc) {
 			server.RegisterService(sd, router)
 		}
 

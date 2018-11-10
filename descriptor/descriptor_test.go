@@ -11,7 +11,7 @@ func Test_descriptor_empty_package(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sds := desc.ServiceDescs()
+	sds := ServiceDescs(desc)
 
 	service := "Service"
 	if s := sds[0].ServiceName; s != service {
@@ -35,7 +35,7 @@ func Test_descriptor_ping(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sds := desc.ServiceDescs()
+	sds := ServiceDescs(desc)
 
 	service := "ping.PingService"
 	if s := sds[0].ServiceName; s != service {
