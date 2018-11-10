@@ -25,7 +25,7 @@ func newRouter(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Cl
 	cs := make(map[string]cluster.Cluster)
 
 	for _, yc := range clusters.Clusters {
-		c, err := cluster.NewClusterRoundRobin(yc)
+		c, err := cluster.NewRoundRobin(yc)
 		if err != nil {
 			return nil, err
 		}

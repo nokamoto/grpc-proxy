@@ -16,7 +16,8 @@ type roundRobin struct {
 	next    int
 }
 
-func NewClusterRoundRobin(c yaml.Cluster) (Cluster, error) {
+// NewRoundRobin returns Cluster with round robin load balancing.
+func NewRoundRobin(c yaml.Cluster) (Cluster, error) {
 	proxies := make([]*proxy, 0)
 
 	for _, address := range c.RoundRobin {
