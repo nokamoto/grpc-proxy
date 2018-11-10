@@ -22,7 +22,9 @@ then
 fi
 
 echo golint
+
 golint . ./yaml
 
 echo go test
+
 go test . ./yaml
