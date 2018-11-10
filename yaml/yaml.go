@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 )
 
+// NewYaml returns routes and clusters configurations read from the yaml file.
 func NewYaml(y string) (*Routes, *Clusters, error) {
 	bytes, err := ioutil.ReadFile(y)
 	if err != nil {
