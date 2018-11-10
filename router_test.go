@@ -4,6 +4,7 @@ import (
 	"fmt"
 	empty "github.com/nokamoto/grpc-proxy/examples/empty-package"
 	ping "github.com/nokamoto/grpc-proxy/examples/ping"
+	"github.com/nokamoto/grpc-proxy/yaml"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"net"
@@ -73,7 +74,7 @@ func withProxyServer(t *testing.T, pb string, yml string, f func(context.Context
 			t.Fatal(err)
 		}
 
-		routes, clusters, err := newYaml(yml)
+		routes, clusters, err := yaml.NewYaml(yml)
 		if err != nil {
 			panic(err)
 		}

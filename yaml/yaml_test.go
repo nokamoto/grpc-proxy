@@ -1,11 +1,11 @@
-package main
+package yaml
 
 import (
 	"testing"
 )
 
-func Test_newYaml_empty_package(t *testing.T) {
-	routes, clusters, err := newYaml("examples/empty-package/example.yaml")
+func Test_NewYaml_empty_package(t *testing.T) {
+	routes, clusters, err := NewYaml("../examples/empty-package/example.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,8 +25,8 @@ func Test_newYaml_empty_package(t *testing.T) {
 	}
 }
 
-func Test_newYaml_ping(t *testing.T) {
-	routes, clusters, err := newYaml("examples/ping/example.yaml")
+func Test_NewYaml_ping(t *testing.T) {
+	routes, clusters, err := NewYaml("../examples/ping/example.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}

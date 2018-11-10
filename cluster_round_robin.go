@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/nokamoto/grpc-proxy/yaml"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"sync"
@@ -13,7 +14,7 @@ type clusterRoundRobin struct {
 	next    int
 }
 
-func newClusterRoundRobin(c yamlCluster) (*clusterRoundRobin, error) {
+func newClusterRoundRobin(c yaml.Cluster) (*clusterRoundRobin, error) {
 	proxies := make([]*proxy, 0)
 
 	for _, address := range c.RoundRobin {

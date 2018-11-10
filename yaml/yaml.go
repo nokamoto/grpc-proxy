@@ -1,22 +1,22 @@
-package main
+package yaml
 
 import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )
 
-func newYaml(y string) (*yamlRoutes, *yamlClusters, error) {
+func NewYaml(y string) (*Routes, *Clusters, error) {
 	bytes, err := ioutil.ReadFile(y)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	r := &yamlRoutes{}
+	r := &Routes{}
 	if err := yaml.Unmarshal(bytes, r); err != nil {
 		return nil, nil, err
 	}
 
-	c := &yamlClusters{}
+	c := &Clusters{}
 	if err := yaml.Unmarshal(bytes, c); err != nil {
 		return nil, nil, err
 	}
