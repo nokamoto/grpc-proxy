@@ -1,12 +1,14 @@
 package main
 
 import (
+	"io"
+	"time"
+
 	"github.com/nokamoto/grpc-proxy/codec"
+	"github.com/nokamoto/grpc-proxy/server"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"io"
-	"time"
 )
 
 type proxy struct {
@@ -30,7 +32,7 @@ func (p *proxy) invokeUnary(ctx context.Context, m *codec.RawMessage, method str
 	return rep, err
 }
 
-func (p *proxy) invokeStreamC(downstream proxyStreamCServer, desc *grpc.StreamDesc, method string) error {
+func (p *proxy) invokeStreamC(downstream server.RawServerStreamC, desc *grpc.StreamDesc, method string) error {
 	// todo: timeout configuration.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -56,7 +58,7 @@ func (p *proxy) invokeStreamC(downstream proxyStreamCServer, desc *grpc.StreamDe
 				return err
 			}
 
-			return downstream.sendAndClose(res)
+			return downstream.SendAndClose(res)
 		}
 
 		if err != nil {
@@ -70,7 +72,7 @@ func (p *proxy) invokeStreamC(downstream proxyStreamCServer, desc *grpc.StreamDe
 	}
 }
 
-func (p *proxy) invokeStreamS(downstream proxyStreamSServer, desc *grpc.StreamDesc, method string) error {
+func (p *proxy) invokeStreamS(downstream server.RawServerStreamS, desc *grpc.StreamDesc, method string) error {
 	// todo: timeout configuration.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -80,9 +82,7 @@ func (p *proxy) invokeStreamS(downstream proxyStreamSServer, desc *grpc.StreamDe
 		return grpc.Errorf(codes.Internal, "[grpc-proxy] stream s error: %s", err)
 	}
 
-	req := new(codec.RawMessage)
-
-	err = downstream.RecvMsg(req)
+	req, err := downstream.Recv()
 	if err != nil {
 		return err
 	}
@@ -103,14 +103,14 @@ func (p *proxy) invokeStreamS(downstream proxyStreamSServer, desc *grpc.StreamDe
 			return err
 		}
 
-		err = downstream.SendMsg(m)
+		err = downstream.Send(m)
 		if err != nil {
 			return err
 		}
 	}
 }
 
-func (p *proxy) invokeStreamB(downstream proxyStreamBServer, desc *grpc.StreamDesc, method string) error {
+func (p *proxy) invokeStreamB(downstream server.RawServerStreamB, desc *grpc.StreamDesc, method string) error {
 	// todo: timeout configuration.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

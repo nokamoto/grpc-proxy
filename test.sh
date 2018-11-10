@@ -23,8 +23,8 @@ fi
 
 echo golint
 
-golint ./codec ./yaml .
+golint ./codec ./server ./yaml .
 
 echo go test
 
-go test ./codec ./yaml .
+go test ./codec ./server ./yaml .

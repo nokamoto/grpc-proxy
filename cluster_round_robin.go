@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"sync"
+
 	"github.com/nokamoto/grpc-proxy/codec"
+	"github.com/nokamoto/grpc-proxy/server"
 	"github.com/nokamoto/grpc-proxy/yaml"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"sync"
 )
 
 type clusterRoundRobin struct {
@@ -47,14 +49,14 @@ func (c *clusterRoundRobin) invokeUnary(ctx context.Context, m *codec.RawMessage
 	return c.nextProxy().invokeUnary(ctx, m, method)
 }
 
-func (c *clusterRoundRobin) invokeStreamC(stream proxyStreamCServer, desc *grpc.StreamDesc, method string) error {
+func (c *clusterRoundRobin) invokeStreamC(stream server.RawServerStreamC, desc *grpc.StreamDesc, method string) error {
 	return c.nextProxy().invokeStreamC(stream, desc, method)
 }
 
-func (c *clusterRoundRobin) invokeStreamS(stream proxyStreamSServer, desc *grpc.StreamDesc, method string) error {
+func (c *clusterRoundRobin) invokeStreamS(stream server.RawServerStreamS, desc *grpc.StreamDesc, method string) error {
 	return c.nextProxy().invokeStreamS(stream, desc, method)
 }
 
-func (c *clusterRoundRobin) invokeStreamB(stream proxyStreamBServer, desc *grpc.StreamDesc, method string) error {
+func (c *clusterRoundRobin) invokeStreamB(stream server.RawServerStreamB, desc *grpc.StreamDesc, method string) error {
 	return c.nextProxy().invokeStreamB(stream, desc, method)
 }

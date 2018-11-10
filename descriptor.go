@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	pb "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/nokamoto/grpc-proxy/server"
 	"google.golang.org/grpc"
 	"io/ioutil"
 )
@@ -59,7 +60,7 @@ func fullMethod(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *p
 func method(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.MethodDescriptorProto) grpc.MethodDesc {
 	return grpc.MethodDesc{
 		MethodName: md.GetName(),
-		Handler:    unaryProxyHandler(fullMethod(fd, sd, md)),
+		Handler:    server.RawUnaryHandler(fullMethod(fd, sd, md)),
 	}
 }
 
@@ -81,7 +82,7 @@ func streamB(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.M
 	}
 
 	// todo: &desc may cause unexpected behavior.
-	desc.Handler = streamBProxyHandler(fullMethod(fd, sd, md), &desc)
+	desc.Handler = server.RawServerStreamBHandler(fullMethod(fd, sd, md), &desc)
 
 	return desc
 }
@@ -93,7 +94,7 @@ func streamC(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.M
 	}
 
 	// todo: &desc may cause unexpected behavior.
-	desc.Handler = streamCProxyHandler(fullMethod(fd, sd, md), &desc)
+	desc.Handler = server.RawServerStreamCHandler(fullMethod(fd, sd, md), &desc)
 
 	return desc
 }
@@ -105,7 +106,7 @@ func streamS(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.M
 	}
 
 	// todo: &desc may cause unexpected behavior.
-	desc.Handler = streamSProxyHandler(fullMethod(fd, sd, md), &desc)
+	desc.Handler = server.RawServerStreamSHandler(fullMethod(fd, sd, md), &desc)
 
 	return desc
 }
@@ -132,6 +133,6 @@ func serviceDescriptor(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto
 		Metadata:    fd.GetName(),
 		Methods:     methods(fd, sd),
 		Streams:     streams(fd, sd),
-		HandlerType: (*proxyServer)(nil),
+		HandlerType: (*server.Server)(nil),
 	}
 }
