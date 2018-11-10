@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// RawUnaryHandler returns grpc.methodHandler for codec.RawMessage.
 func RawUnaryHandler(fullMethod string) func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error) {
 	return func(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 		in := new(codec.RawMessage)
@@ -26,18 +27,21 @@ func RawUnaryHandler(fullMethod string) func(interface{}, context.Context, func(
 	}
 }
 
+// RawServerStreamCHandler returns grpc.StreamHandler for the client side codec.RawMessage stream.
 func RawServerStreamCHandler(fullMethod string, desc *grpc.StreamDesc) grpc.StreamHandler {
 	return func(srv interface{}, stream grpc.ServerStream) error {
 		return srv.(Server).StreamC(RawServerStreamC{stream}, desc, fullMethod)
 	}
 }
 
+// RawServerStreamSHandler returns grpc.StreamHandler for the server side codec.RawMessage stream.
 func RawServerStreamSHandler(fullMethod string, desc *grpc.StreamDesc) grpc.StreamHandler {
 	return func(srv interface{}, stream grpc.ServerStream) error {
 		return srv.(Server).StreamS(RawServerStreamS{stream}, desc, fullMethod)
 	}
 }
 
+// RawServerStreamBHandler returns grpc.StreamHandler for the bidirectional codec.RawMessage stream.
 func RawServerStreamBHandler(fullMethod string, desc *grpc.StreamDesc) grpc.StreamHandler {
 	return func(srv interface{}, stream grpc.ServerStream) error {
 		return srv.(Server).StreamB(RawServerStreamB{stream}, desc, fullMethod)

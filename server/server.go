@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Server represents a gRPC server which sends/receives codec.RawMessage.
 type Server interface {
 	Unary(context.Context, *codec.RawMessage, string) (*codec.RawMessage, error)
 	StreamC(RawServerStreamC, *grpc.StreamDesc, string) error
