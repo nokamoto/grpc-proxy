@@ -4,6 +4,7 @@ import (
 	"fmt"
 	pb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/nokamoto/grpc-proxy/codec"
+	"github.com/nokamoto/grpc-proxy/server"
 	"github.com/nokamoto/grpc-proxy/yaml"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -55,7 +56,7 @@ func newRouter(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Cl
 	return r, nil
 }
 
-func (r *router) unary(ctx context.Context, m *codec.RawMessage, method string) (*codec.RawMessage, error) {
+func (r *router) Unary(ctx context.Context, m *codec.RawMessage, method string) (*codec.RawMessage, error) {
 	cluster, ok := r.clusters[method]
 	if !ok {
 		return nil, grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
@@ -63,7 +64,7 @@ func (r *router) unary(ctx context.Context, m *codec.RawMessage, method string) 
 	return cluster.invokeUnary(ctx, m, method)
 }
 
-func (r *router) streamC(stream proxyStreamCServer, desc *grpc.StreamDesc, method string) error {
+func (r *router) StreamC(stream server.RawServerStreamC, desc *grpc.StreamDesc, method string) error {
 	cluster, ok := r.clusters[method]
 	if !ok {
 		return grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
@@ -71,7 +72,7 @@ func (r *router) streamC(stream proxyStreamCServer, desc *grpc.StreamDesc, metho
 	return cluster.invokeStreamC(stream, desc, method)
 }
 
-func (r *router) streamS(stream proxyStreamSServer, desc *grpc.StreamDesc, method string) error {
+func (r *router) StreamS(stream server.RawServerStreamS, desc *grpc.StreamDesc, method string) error {
 	cluster, ok := r.clusters[method]
 	if !ok {
 		return grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
@@ -79,7 +80,7 @@ func (r *router) streamS(stream proxyStreamSServer, desc *grpc.StreamDesc, metho
 	return cluster.invokeStreamS(stream, desc, method)
 }
 
-func (r *router) streamB(stream proxyStreamBServer, desc *grpc.StreamDesc, method string) error {
+func (r *router) StreamB(stream server.RawServerStreamB, desc *grpc.StreamDesc, method string) error {
 	cluster, ok := r.clusters[method]
 	if !ok {
 		return grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
