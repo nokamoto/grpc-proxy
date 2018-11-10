@@ -1,13 +1,14 @@
 package main
 
 import (
+	"github.com/nokamoto/grpc-proxy/codec"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
 func unaryProxyHandler(fullMethod string) func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error) {
 	return func(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-		in := new(message)
+		in := new(codec.RawMessage)
 		if err := dec(in); err != nil {
 			return nil, err
 		}
@@ -19,7 +20,7 @@ func unaryProxyHandler(fullMethod string) func(interface{}, context.Context, fun
 			FullMethod: fullMethod,
 		}
 		handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.(proxyServer).unary(ctx, req.(*message), fullMethod)
+			return srv.(proxyServer).unary(ctx, req.(*codec.RawMessage), fullMethod)
 		}
 		return interceptor(ctx, in, info, handler)
 	}

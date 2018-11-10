@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	pb "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/nokamoto/grpc-proxy/codec"
 	"github.com/nokamoto/grpc-proxy/yaml"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -54,7 +55,7 @@ func newRouter(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Cl
 	return r, nil
 }
 
-func (r *router) unary(ctx context.Context, m *message, method string) (*message, error) {
+func (r *router) unary(ctx context.Context, m *codec.RawMessage, method string) (*codec.RawMessage, error) {
 	cluster, ok := r.clusters[method]
 	if !ok {
 		return nil, grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")

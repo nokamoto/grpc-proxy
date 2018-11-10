@@ -1,11 +1,13 @@
 package main
 
 import (
+	"io"
+	"time"
+
+	"github.com/nokamoto/grpc-proxy/codec"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"io"
-	"time"
 )
 
 type proxy struct {
@@ -23,9 +25,9 @@ func newProxy(address string) (*proxy, error) {
 	return &proxy{con}, err
 }
 
-func (p *proxy) invokeUnary(ctx context.Context, m *message, method string) (*message, error) {
-	rep := new(message)
-	err := p.con.Invoke(ctx, method, m, rep, grpc.CallCustomCodec(codec{}))
+func (p *proxy) invokeUnary(ctx context.Context, m *codec.RawMessage, method string) (*codec.RawMessage, error) {
+	rep := new(codec.RawMessage)
+	err := p.con.Invoke(ctx, method, m, rep, grpc.CallCustomCodec(codec.RawCodec{}))
 	return rep, err
 }
 
@@ -34,7 +36,7 @@ func (p *proxy) invokeStreamC(downstream proxyStreamCServer, desc *grpc.StreamDe
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	upstream, err := p.con.NewStream(ctx, desc, method, grpc.CallCustomCodec(codec{}))
+	upstream, err := p.con.NewStream(ctx, desc, method, grpc.CallCustomCodec(codec.RawCodec{}))
 	if err != nil {
 		return grpc.Errorf(codes.Internal, "[grpc-proxy] stream c error: %s", err)
 	}
@@ -43,7 +45,7 @@ func (p *proxy) invokeStreamC(downstream proxyStreamCServer, desc *grpc.StreamDe
 		m, err := downstream.Recv()
 
 		if err == io.EOF {
-			res := new(message)
+			res := new(codec.RawMessage)
 
 			err = upstream.CloseSend()
 			if err != nil {
@@ -74,12 +76,12 @@ func (p *proxy) invokeStreamS(downstream proxyStreamSServer, desc *grpc.StreamDe
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	upstream, err := p.con.NewStream(ctx, desc, method, grpc.CallCustomCodec(codec{}))
+	upstream, err := p.con.NewStream(ctx, desc, method, grpc.CallCustomCodec(codec.RawCodec{}))
 	if err != nil {
 		return grpc.Errorf(codes.Internal, "[grpc-proxy] stream s error: %s", err)
 	}
 
-	req := new(message)
+	req := new(codec.RawMessage)
 
 	err = downstream.RecvMsg(req)
 	if err != nil {
@@ -92,7 +94,7 @@ func (p *proxy) invokeStreamS(downstream proxyStreamSServer, desc *grpc.StreamDe
 	}
 
 	for {
-		m := new(message)
+		m := new(codec.RawMessage)
 		err = upstream.RecvMsg(m)
 		if err == io.EOF {
 			return nil
@@ -114,7 +116,7 @@ func (p *proxy) invokeStreamB(downstream proxyStreamBServer, desc *grpc.StreamDe
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	upstream, err := p.con.NewStream(ctx, desc, method, grpc.CallCustomCodec(codec{}))
+	upstream, err := p.con.NewStream(ctx, desc, method, grpc.CallCustomCodec(codec.RawCodec{}))
 	if err != nil {
 		return grpc.Errorf(codes.Internal, "[grpc-proxy] stream b error: %s", err)
 	}
@@ -123,7 +125,7 @@ func (p *proxy) invokeStreamB(downstream proxyStreamBServer, desc *grpc.StreamDe
 
 	go func() {
 		for {
-			m := new(message)
+			m := new(codec.RawMessage)
 
 			err := downstream.RecvMsg(m)
 			if err == io.EOF {
@@ -146,7 +148,7 @@ func (p *proxy) invokeStreamB(downstream proxyStreamBServer, desc *grpc.StreamDe
 
 	go func() {
 		for {
-			m := new(message)
+			m := new(codec.RawMessage)
 
 			err := upstream.RecvMsg(m)
 			if err == io.EOF {
