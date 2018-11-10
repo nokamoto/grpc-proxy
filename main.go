@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/nokamoto/grpc-proxy/yaml"
 	"google.golang.org/grpc"
 	"net"
 )
@@ -21,7 +22,7 @@ func main() {
 
 	flag.Parse()
 
-	routes, clusters, err := newYaml(*y)
+	routes, clusters, err := yaml.NewYaml(*y)
 	if err != nil {
 		panic(err)
 	}

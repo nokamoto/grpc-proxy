@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	pb "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/nokamoto/grpc-proxy/yaml"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -12,7 +13,7 @@ type router struct {
 	clusters map[string]cluster
 }
 
-func newRouter(fds *pb.FileDescriptorSet, routes *yamlRoutes, clusters *yamlClusters) (*router, error) {
+func newRouter(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Clusters) (*router, error) {
 	r := &router{
 		clusters: make(map[string]cluster),
 	}
@@ -32,7 +33,7 @@ func newRouter(fds *pb.FileDescriptorSet, routes *yamlRoutes, clusters *yamlClus
 		for _, sd := range fd.GetService() {
 			for _, md := range sd.GetMethod() {
 				full := fullMethod(fd, sd, md)
-				route := routes.findByFullMethod(full)
+				route := routes.FindByFullMethod(full)
 
 				if len(route) == 0 {
 					return nil, fmt.Errorf("%s has no route", full)
