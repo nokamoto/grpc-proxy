@@ -8,6 +8,7 @@ WORKDIR /go/src/github.com/nokamoto/grpc-proxy
 
 COPY Gopkg.lock .
 COPY Gopkg.toml .
+COPY cluster cluster
 COPY codec codec
 COPY descriptor descriptor
 COPY server server
