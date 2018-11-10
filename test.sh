@@ -23,8 +23,8 @@ fi
 
 echo golint
 
-golint ./codec ./descriptor ./server ./yaml .
+golint ./cluster ./codec ./descriptor ./server ./yaml .
 
 echo go test
 
-go test ./codec ./descriptor ./server ./yaml .
+go test ./cluster ./codec ./descriptor ./server ./yaml .

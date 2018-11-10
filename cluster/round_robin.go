@@ -1,4 +1,4 @@
-package main
+package cluster
 
 import (
 	"fmt"
@@ -10,13 +10,14 @@ import (
 	"sync"
 )
 
-type clusterRoundRobin struct {
+type roundRobin struct {
 	mu      sync.Mutex
 	proxies []*proxy
 	next    int
 }
 
-func newClusterRoundRobin(c yaml.Cluster) (*clusterRoundRobin, error) {
+// NewRoundRobin returns Cluster with round robin load balancing.
+func NewRoundRobin(c yaml.Cluster) (Cluster, error) {
 	proxies := make([]*proxy, 0)
 
 	for _, address := range c.RoundRobin {
@@ -32,10 +33,10 @@ func newClusterRoundRobin(c yaml.Cluster) (*clusterRoundRobin, error) {
 		return nil, fmt.Errorf("cluster %s empty round robin", c.Name)
 	}
 
-	return &clusterRoundRobin{proxies: proxies}, nil
+	return &roundRobin{proxies: proxies}, nil
 }
 
-func (c *clusterRoundRobin) nextProxy() *proxy {
+func (c *roundRobin) nextProxy() *proxy {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -44,18 +45,18 @@ func (c *clusterRoundRobin) nextProxy() *proxy {
 	return c.proxies[c.next]
 }
 
-func (c *clusterRoundRobin) invokeUnary(ctx context.Context, m *codec.RawMessage, method string) (*codec.RawMessage, error) {
+func (c *roundRobin) InvokeUnary(ctx context.Context, m *codec.RawMessage, method string) (*codec.RawMessage, error) {
 	return c.nextProxy().invokeUnary(ctx, m, method)
 }
 
-func (c *clusterRoundRobin) invokeStreamC(stream server.RawServerStreamC, desc *grpc.StreamDesc, method string) error {
+func (c *roundRobin) InvokeStreamC(stream server.RawServerStreamC, desc *grpc.StreamDesc, method string) error {
 	return c.nextProxy().invokeStreamC(stream, desc, method)
 }
 
-func (c *clusterRoundRobin) invokeStreamS(stream server.RawServerStreamS, desc *grpc.StreamDesc, method string) error {
+func (c *roundRobin) InvokeStreamS(stream server.RawServerStreamS, desc *grpc.StreamDesc, method string) error {
 	return c.nextProxy().invokeStreamS(stream, desc, method)
 }
 
-func (c *clusterRoundRobin) invokeStreamB(stream server.RawServerStreamB, desc *grpc.StreamDesc, method string) error {
+func (c *roundRobin) InvokeStreamB(stream server.RawServerStreamB, desc *grpc.StreamDesc, method string) error {
 	return c.nextProxy().invokeStreamB(stream, desc, method)
 }
