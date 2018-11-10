@@ -9,6 +9,7 @@ WORKDIR /go/src/github.com/nokamoto/grpc-proxy
 COPY Gopkg.lock .
 COPY Gopkg.toml .
 COPY codec codec
+COPY descriptor descriptor
 COPY server server
 COPY yaml yaml
 COPY *.go ./

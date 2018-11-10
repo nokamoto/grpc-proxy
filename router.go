@@ -4,6 +4,7 @@ import (
 	"fmt"
 	pb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/nokamoto/grpc-proxy/codec"
+	"github.com/nokamoto/grpc-proxy/descriptor"
 	"github.com/nokamoto/grpc-proxy/server"
 	"github.com/nokamoto/grpc-proxy/yaml"
 	"golang.org/x/net/context"
@@ -34,7 +35,7 @@ func newRouter(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Cl
 	for _, fd := range fds.File {
 		for _, sd := range fd.GetService() {
 			for _, md := range sd.GetMethod() {
-				full := fullMethod(fd, sd, md)
+				full := descriptor.FullMethod(fd, sd, md)
 				route := routes.FindByFullMethod(full)
 
 				if len(route) == 0 {

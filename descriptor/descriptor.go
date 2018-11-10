@@ -1,4 +1,4 @@
-package main
+package descriptor
 
 import (
 	"fmt"
@@ -9,11 +9,11 @@ import (
 	"io/ioutil"
 )
 
-type descriptor struct {
+type Descriptor struct {
 	*pb.FileDescriptorSet
 }
 
-func newDescriptor(file string) (*descriptor, error) {
+func NewDescriptor(file string) (*Descriptor, error) {
 	bytes, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -25,21 +25,21 @@ func newDescriptor(file string) (*descriptor, error) {
 		return nil, err
 	}
 
-	return &descriptor{fds}, nil
+	return &Descriptor{fds}, nil
 }
 
-func (d *descriptor) serviceDescriptors() []*grpc.ServiceDesc {
+func (d *Descriptor) ServiceDescs() []*grpc.ServiceDesc {
 	descs := make([]*grpc.ServiceDesc, 0)
 	for _, file := range d.File {
-		descs = append(descs, serviceDescriptorsFromFileDescriptor(file)...)
+		descs = append(descs, serviceDescs(file)...)
 	}
 	return descs
 }
 
-func serviceDescriptorsFromFileDescriptor(fd *pb.FileDescriptorProto) []*grpc.ServiceDesc {
+func serviceDescs(fd *pb.FileDescriptorProto) []*grpc.ServiceDesc {
 	descs := make([]*grpc.ServiceDesc, 0)
 	for _, sd := range fd.GetService() {
-		descs = append(descs, serviceDescriptor(fd, sd))
+		descs = append(descs, serviceDesc(fd, sd))
 	}
 	return descs
 }
@@ -53,14 +53,14 @@ func serviceName(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto) stri
 	return name
 }
 
-func fullMethod(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.MethodDescriptorProto) string {
+func FullMethod(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.MethodDescriptorProto) string {
 	return fmt.Sprintf("/%s/%s", serviceName(fd, sd), md.GetName())
 }
 
 func method(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.MethodDescriptorProto) grpc.MethodDesc {
 	return grpc.MethodDesc{
 		MethodName: md.GetName(),
-		Handler:    server.RawUnaryHandler(fullMethod(fd, sd, md)),
+		Handler:    server.RawUnaryHandler(FullMethod(fd, sd, md)),
 	}
 }
 
@@ -82,7 +82,7 @@ func streamB(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.M
 	}
 
 	// todo: &desc may cause unexpected behavior.
-	desc.Handler = server.RawServerStreamBHandler(fullMethod(fd, sd, md), &desc)
+	desc.Handler = server.RawServerStreamBHandler(FullMethod(fd, sd, md), &desc)
 
 	return desc
 }
@@ -94,7 +94,7 @@ func streamC(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.M
 	}
 
 	// todo: &desc may cause unexpected behavior.
-	desc.Handler = server.RawServerStreamCHandler(fullMethod(fd, sd, md), &desc)
+	desc.Handler = server.RawServerStreamCHandler(FullMethod(fd, sd, md), &desc)
 
 	return desc
 }
@@ -106,7 +106,7 @@ func streamS(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto, md *pb.M
 	}
 
 	// todo: &desc may cause unexpected behavior.
-	desc.Handler = server.RawServerStreamSHandler(fullMethod(fd, sd, md), &desc)
+	desc.Handler = server.RawServerStreamSHandler(FullMethod(fd, sd, md), &desc)
 
 	return desc
 }
@@ -127,7 +127,7 @@ func streams(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto) []grpc.S
 	return descs
 }
 
-func serviceDescriptor(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto) *grpc.ServiceDesc {
+func serviceDesc(fd *pb.FileDescriptorProto, sd *pb.ServiceDescriptorProto) *grpc.ServiceDesc {
 	return &grpc.ServiceDesc{
 		ServiceName: serviceName(fd, sd),
 		Metadata:    fd.GetName(),

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/nokamoto/grpc-proxy/descriptor"
 	empty "github.com/nokamoto/grpc-proxy/examples/empty-package"
 	ping "github.com/nokamoto/grpc-proxy/examples/ping"
 	"github.com/nokamoto/grpc-proxy/yaml"
@@ -69,7 +70,7 @@ func withProxyServer(t *testing.T, pb string, yml string, f func(context.Context
 
 		server := newGrpcServer()
 
-		desc, err := newDescriptor(pb)
+		desc, err := descriptor.NewDescriptor(pb)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -84,7 +85,7 @@ func withProxyServer(t *testing.T, pb string, yml string, f func(context.Context
 			panic(err)
 		}
 
-		for _, sd := range desc.serviceDescriptors() {
+		for _, sd := range desc.ServiceDescs() {
 			server.RegisterService(sd, router)
 		}
 

@@ -1,4 +1,4 @@
-package main
+package descriptor
 
 import (
 	"google.golang.org/grpc"
@@ -6,12 +6,12 @@ import (
 )
 
 func Test_descriptor_empty_package(t *testing.T) {
-	desc, err := newDescriptor("examples/empty-package/example.pb")
+	desc, err := NewDescriptor("../examples/empty-package/example.pb")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	sds := desc.serviceDescriptors()
+	sds := desc.ServiceDescs()
 
 	service := "Service"
 	if s := sds[0].ServiceName; s != service {
@@ -30,12 +30,12 @@ func Test_descriptor_empty_package(t *testing.T) {
 }
 
 func Test_descriptor_ping(t *testing.T) {
-	desc, err := newDescriptor("examples/ping/example.pb")
+	desc, err := NewDescriptor("../examples/ping/example.pb")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	sds := desc.serviceDescriptors()
+	sds := desc.ServiceDescs()
 
 	service := "ping.PingService"
 	if s := sds[0].ServiceName; s != service {
