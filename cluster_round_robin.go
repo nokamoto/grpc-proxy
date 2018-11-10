@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"sync"
 	"github.com/nokamoto/grpc-proxy/codec"
 	"github.com/nokamoto/grpc-proxy/yaml"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"sync"
 )
 
 type clusterRoundRobin struct {

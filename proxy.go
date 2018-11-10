@@ -1,12 +1,12 @@
 package main
 
 import (
-	"io"
-	"time"
 	"github.com/nokamoto/grpc-proxy/codec"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"io"
+	"time"
 )
 
 type proxy struct {
