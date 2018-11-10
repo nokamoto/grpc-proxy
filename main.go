@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/nokamoto/grpc-proxy/codec"
 	"github.com/nokamoto/grpc-proxy/yaml"
 	"google.golang.org/grpc"
 	"net"
 )
 
 func newGrpcServer() *grpc.Server {
-	opts := []grpc.ServerOption{grpc.CustomCodec(codec{})}
+	opts := []grpc.ServerOption{grpc.CustomCodec(codec.RawCodec{})}
 	return grpc.NewServer(opts...)
 }
 
