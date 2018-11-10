@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/nokamoto/grpc-proxy/codec"
+	"github.com/nokamoto/grpc-proxy/descriptor"
 	"github.com/nokamoto/grpc-proxy/yaml"
 	"google.golang.org/grpc"
 	"net"
@@ -35,17 +36,17 @@ func main() {
 
 	server := newGrpcServer()
 
-	desc, err := newDescriptor(*pb)
+	desc, err := descriptor.NewDescriptor(*pb)
 	if err != nil {
 		panic(err)
 	}
 
-	router, err := newRouter(desc.FileDescriptorSet, routes, clusters)
+	router, err := newRouter(desc, routes, clusters)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, sd := range desc.serviceDescriptors() {
+	for _, sd := range descriptor.ServiceDescs(desc) {
 		server.RegisterService(sd, router)
 	}
 
