@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"sync"
-
 	"github.com/nokamoto/grpc-proxy/codec"
 	"github.com/nokamoto/grpc-proxy/server"
 	"github.com/nokamoto/grpc-proxy/yaml"

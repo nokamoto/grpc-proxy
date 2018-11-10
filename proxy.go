@@ -3,7 +3,6 @@ package main
 import (
 	"io"
 	"time"
-
 	"github.com/nokamoto/grpc-proxy/codec"
 	"github.com/nokamoto/grpc-proxy/server"
 	"golang.org/x/net/context"

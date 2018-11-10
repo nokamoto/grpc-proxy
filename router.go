@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-
 	pb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/nokamoto/grpc-proxy/codec"
 	"github.com/nokamoto/grpc-proxy/server"
