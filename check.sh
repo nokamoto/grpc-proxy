@@ -23,8 +23,9 @@ fi
 
 echo golint
 
-golint ./cluster ./codec ./descriptor ./proxy ./route ./server ./test ./yaml .
+# golint ./... (https://github.com/golang/lint/issues/320)
+golint $(go list ./... | grep -v /vendor/)
 
 echo go test
 
-go test ./cluster ./codec ./descriptor ./proxy ./route ./server ./test ./yaml .
+go test ./...
