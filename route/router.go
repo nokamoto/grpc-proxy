@@ -1,4 +1,4 @@
-package main
+package route
 
 import (
 	"fmt"
@@ -13,12 +13,14 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-type router struct {
+// Routes implements server.Server.
+type Routes struct {
 	clusters map[string]cluster.Cluster
 }
 
-func newRouter(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Clusters) (*router, error) {
-	r := &router{
+// NewRoutes returns Routes from the yaml configurations.
+func NewRoutes(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Clusters) (*Routes, error) {
+	r := &Routes{
 		clusters: make(map[string]cluster.Cluster),
 	}
 
@@ -58,7 +60,8 @@ func newRouter(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Cl
 	return r, nil
 }
 
-func (r *router) Unary(ctx context.Context, m *codec.RawMessage, method string) (*codec.RawMessage, error) {
+// Unary routes codec.RawMessage to a selected cluster.
+func (r *Routes) Unary(ctx context.Context, m *codec.RawMessage, method string) (*codec.RawMessage, error) {
 	c, ok := r.clusters[method]
 	if !ok {
 		return nil, grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
@@ -66,7 +69,8 @@ func (r *router) Unary(ctx context.Context, m *codec.RawMessage, method string) 
 	return c.InvokeUnary(ctx, m, method)
 }
 
-func (r *router) StreamC(stream server.RawServerStreamC, desc *grpc.StreamDesc, method string) error {
+// StreamC routes the client side stream to a selected cluster.
+func (r *Routes) StreamC(stream server.RawServerStreamC, desc *grpc.StreamDesc, method string) error {
 	c, ok := r.clusters[method]
 	if !ok {
 		return grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
@@ -74,7 +78,8 @@ func (r *router) StreamC(stream server.RawServerStreamC, desc *grpc.StreamDesc, 
 	return c.InvokeStreamC(stream, desc, method)
 }
 
-func (r *router) StreamS(stream server.RawServerStreamS, desc *grpc.StreamDesc, method string) error {
+// StreamS routes the server side stream to a selected cluster.
+func (r *Routes) StreamS(stream server.RawServerStreamS, desc *grpc.StreamDesc, method string) error {
 	c, ok := r.clusters[method]
 	if !ok {
 		return grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
@@ -82,7 +87,8 @@ func (r *router) StreamS(stream server.RawServerStreamS, desc *grpc.StreamDesc, 
 	return c.InvokeStreamS(stream, desc, method)
 }
 
-func (r *router) StreamB(stream server.RawServerStreamB, desc *grpc.StreamDesc, method string) error {
+// StreamB routes the bidirectional stream to a selected cluster.
+func (r *Routes) StreamB(stream server.RawServerStreamB, desc *grpc.StreamDesc, method string) error {
 	c, ok := r.clusters[method]
 	if !ok {
 		return grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")

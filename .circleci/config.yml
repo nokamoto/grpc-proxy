@@ -14,9 +14,9 @@ jobs:
           working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/ping
           command: make
       - run: test -z "$(gofmt -l .)"
-      - run: golint -set_exit_status ./cluster ./codec ./descriptor ./server ./yaml .
+      - run: golint -set_exit_status ./cluster ./codec ./descriptor ./route ./server ./yaml .
       - run: dep ensure -vendor-only=true
-      - run: go test ./cluster ./codec ./descriptor ./server ./yaml .
+      - run: go test ./cluster ./codec ./descriptor ./route ./server ./yaml .
   build-test:
     docker:
       - image: docker:18.06.0-ce-git
