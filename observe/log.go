@@ -8,10 +8,12 @@ import (
 	"time"
 )
 
+// Log represents an access logger for a gRPC request.
 type Log interface {
 	Write(string, codes.Code, int, int, time.Duration) (int, error)
 }
 
+// NewLog returns Log from the yaml configuration.
 func NewLog(c yaml.Log) (Log, error) {
 	if c.File == "/dev/stdout" {
 		return &log{file: os.Stdout}, nil

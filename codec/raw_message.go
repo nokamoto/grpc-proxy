@@ -21,6 +21,7 @@ func (m *RawMessage) String() string {
 	return hex.EncodeToString(m.bytes)
 }
 
+// Size returns the size of the bytes.
 func (m *RawMessage) Size() int {
 	return len(m.bytes)
 }
