@@ -5,6 +5,7 @@ import (
 	"github.com/nokamoto/grpc-proxy/descriptor"
 	empty "github.com/nokamoto/grpc-proxy/examples/empty-package"
 	ping "github.com/nokamoto/grpc-proxy/examples/ping"
+	"github.com/nokamoto/grpc-proxy/route"
 	"github.com/nokamoto/grpc-proxy/yaml"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -80,7 +81,7 @@ func withProxyServer(t *testing.T, pb string, yml string, f func(context.Context
 			panic(err)
 		}
 
-		router, err := newRouter(desc, routes, clusters)
+		router, err := route.NewRoutes(desc, routes, clusters)
 		if err != nil {
 			panic(err)
 		}

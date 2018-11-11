@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/nokamoto/grpc-proxy/codec"
 	"github.com/nokamoto/grpc-proxy/descriptor"
+	"github.com/nokamoto/grpc-proxy/route"
 	"github.com/nokamoto/grpc-proxy/yaml"
 	"google.golang.org/grpc"
 	"net"
@@ -41,7 +42,7 @@ func main() {
 		panic(err)
 	}
 
-	router, err := newRouter(desc, routes, clusters)
+	router, err := route.NewRoutes(desc, routes, clusters)
 	if err != nil {
 		panic(err)
 	}
