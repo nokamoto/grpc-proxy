@@ -17,6 +17,11 @@ type Route struct {
 	Cluster struct {
 		Name string
 	}
+	Observe struct {
+		Log struct {
+			Name string
+		}
+	}
 }
 
 // FindByFullMethod returns all routes match fully qualified the gRPC service method name.

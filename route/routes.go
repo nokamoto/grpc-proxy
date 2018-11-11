@@ -6,6 +6,7 @@ import (
 	"github.com/nokamoto/grpc-proxy/cluster"
 	"github.com/nokamoto/grpc-proxy/codec"
 	"github.com/nokamoto/grpc-proxy/descriptor"
+	obs "github.com/nokamoto/grpc-proxy/observe"
 	"github.com/nokamoto/grpc-proxy/server"
 	"github.com/nokamoto/grpc-proxy/yaml"
 	"golang.org/x/net/context"
@@ -15,13 +16,13 @@ import (
 
 // Routes implements server.Server.
 type Routes struct {
-	clusters map[string]cluster.Cluster
+	routes map[string]*route
 }
 
 // NewRoutes returns Routes from the yaml configurations.
-func NewRoutes(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Clusters) (*Routes, error) {
+func NewRoutes(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Clusters, observe *yaml.Observe) (*Routes, error) {
 	r := &Routes{
-		clusters: make(map[string]cluster.Cluster),
+		routes: make(map[string]*route),
 	}
 
 	cs := make(map[string]cluster.Cluster)
@@ -35,24 +36,42 @@ func NewRoutes(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Cl
 		cs[yc.Name] = c
 	}
 
+	ls := make(map[string]obs.Log)
+
+	for _, yl := range observe.Observe.Logs {
+		l, err := obs.NewLog(yl)
+		if err != nil {
+			return nil, err
+		}
+
+		ls[yl.Name] = l
+	}
+
 	for _, fd := range fds.File {
 		for _, sd := range fd.GetService() {
 			for _, md := range sd.GetMethod() {
 				full := descriptor.FullMethod(fd, sd, md)
-				route := routes.FindByFullMethod(full)
+				yr := routes.FindByFullMethod(full)
 
-				if len(route) == 0 {
+				if len(yr) == 0 {
 					return nil, fmt.Errorf("%s has no route", full)
-				} else if len(route) > 1 {
-					return nil, fmt.Errorf("%s has ambiguous routes: %v", full, route)
+				} else if len(yr) > 1 {
+					return nil, fmt.Errorf("%s has ambiguous routes: %v", full, yr)
 				}
 
-				cluster, ok := cs[route[0].Cluster.Name]
+				head := yr[0]
+
+				cluster, ok := cs[head.Cluster.Name]
 				if !ok {
-					return nil, fmt.Errorf("cluster %s is undefined", route[0].Cluster.Name)
+					return nil, fmt.Errorf("cluster %s is undefined", head.Cluster.Name)
 				}
 
-				r.clusters[full] = cluster
+				log, ok := ls[head.Observe.Log.Name]
+				if !ok {
+					return nil, fmt.Errorf("log %s is undefined", head.Observe.Log.Name)
+				}
+
+				r.routes[full] = &route{cluster: cluster, log: log}
 			}
 		}
 	}
@@ -62,36 +81,36 @@ func NewRoutes(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Cl
 
 // Unary routes codec.RawMessage to a selected cluster.
 func (r *Routes) Unary(ctx context.Context, m *codec.RawMessage, method string) (*codec.RawMessage, error) {
-	c, ok := r.clusters[method]
+	c, ok := r.routes[method]
 	if !ok {
 		return nil, grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
 	}
-	return c.InvokeUnary(ctx, m, method)
+	return c.unary(ctx, m, method)
 }
 
 // StreamC routes the client side stream to a selected cluster.
 func (r *Routes) StreamC(stream server.RawServerStreamC, desc *grpc.StreamDesc, method string) error {
-	c, ok := r.clusters[method]
+	c, ok := r.routes[method]
 	if !ok {
 		return grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
 	}
-	return c.InvokeStreamC(stream, desc, method)
+	return c.streamC(stream, desc, method)
 }
 
 // StreamS routes the server side stream to a selected cluster.
 func (r *Routes) StreamS(stream server.RawServerStreamS, desc *grpc.StreamDesc, method string) error {
-	c, ok := r.clusters[method]
+	c, ok := r.routes[method]
 	if !ok {
 		return grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
 	}
-	return c.InvokeStreamS(stream, desc, method)
+	return c.streamS(stream, desc, method)
 }
 
 // StreamB routes the bidirectional stream to a selected cluster.
 func (r *Routes) StreamB(stream server.RawServerStreamB, desc *grpc.StreamDesc, method string) error {
-	c, ok := r.clusters[method]
+	c, ok := r.routes[method]
 	if !ok {
 		return grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
 	}
-	return c.InvokeStreamB(stream, desc, method)
+	return c.streamB(stream, desc, method)
 }
