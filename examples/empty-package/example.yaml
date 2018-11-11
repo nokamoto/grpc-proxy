@@ -6,6 +6,9 @@ routes:
     observe:
       log:
         name: stdout
+      prom:
+        name: default
+
 
 clusters:
   - name: local
@@ -16,3 +19,19 @@ observe:
   logs:
     - name: stdout
       file: /dev/stdout
+  prom:
+    - name: default
+      buckets:
+        latency-seconds:
+          - 1.0
+          - 0.5
+        request-bytes:
+          - 256
+          - 128
+          - 64
+          - 32
+        response-bytes:
+          - 256
+          - 128
+          - 64
+          - 32

@@ -12,6 +12,7 @@ type Yaml struct {
 	Clusters []Cluster
 	Observe  struct {
 		Logs []Log
+		Prom []Prom
 	}
 }
 
