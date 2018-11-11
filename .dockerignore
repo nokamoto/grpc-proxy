@@ -1,0 +1,6 @@
+./examples
+./vendor
+./.gitignore
+./check.sh
+./Dockerfile
+./README.md

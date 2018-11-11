@@ -6,16 +6,7 @@ RUN go get -u github.com/golang/dep/cmd/dep
 
 WORKDIR /go/src/github.com/nokamoto/grpc-proxy
 
-COPY Gopkg.lock .
-COPY Gopkg.toml .
-COPY cluster cluster
-COPY codec codec
-COPY descriptor descriptor
-COPY proxy proxy
-COPY route route
-COPY server server
-COPY yaml yaml
-COPY *.go ./
+COPY . .
 
 RUN dep ensure -vendor-only=true
 
