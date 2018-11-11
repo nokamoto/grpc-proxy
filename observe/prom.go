@@ -14,6 +14,7 @@ type Prom interface {
 
 func NewProm(c yaml.Prom) (Prom, error) {
 	labels := []string{"method", "status"}
+
 	counter := prometheus.NewCounterVec(prometheus.CounterOpts{Name: "request_count"}, labels)
 
 	err := prometheus.Register(counter)
@@ -26,10 +27,26 @@ func NewProm(c yaml.Prom) (Prom, error) {
 		return f
 	}
 
-	labels = []string{"method"}
-	latency := prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "latency_seconds", Buckets: sorted(c.Buckets.LatencySeconds)}, labels)
-	req := prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "request_bytes", Buckets: sorted(c.Buckets.RequestBytes)}, labels)
-	res := prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "response_bytes", Buckets: sorted(c.Buckets.ResponseBytes)}, labels)
+	hist := func(name string, buckets []float64) (*prometheus.HistogramVec, error) {
+		h := prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: name, Buckets: sorted(buckets)}, labels)
+		err := prometheus.Register(h)
+		return h, err
+	}
+
+	latency, err := hist("latency_seconds", c.Buckets.LatencySeconds)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := hist("request_bytes", c.Buckets.RequestBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := hist("response_bytes", c.Buckets.ResponseBytes)
+	if err != nil {
+		return nil, err
+	}
 
 	return &prom{counter: counter, hist: hists{req: req, res: res, latency: latency}}, nil
 }
@@ -46,22 +63,24 @@ type hists struct {
 }
 
 func (p *prom) Observe(method string, code codes.Code, req int, res int, nanos time.Duration) error {
-	c, err := p.counter.GetMetricWithLabelValues(method, code.String())
+	labels := []string{method, code.String()}
+
+	c, err := p.counter.GetMetricWithLabelValues(labels...)
 	if err != nil {
 		return err
 	}
 
-	hreq, err := p.hist.req.GetMetricWithLabelValues(method)
+	hreq, err := p.hist.req.GetMetricWithLabelValues(labels...)
 	if err != nil {
 		return err
 	}
 
-	hres, err := p.hist.res.GetMetricWithLabelValues(method)
+	hres, err := p.hist.res.GetMetricWithLabelValues(labels...)
 	if err != nil {
 		return err
 	}
 
-	hlatency, err := p.hist.latency.GetMetricWithLabelValues(method)
+	hlatency, err := p.hist.latency.GetMetricWithLabelValues(labels...)
 	if err != nil {
 		return err
 	}

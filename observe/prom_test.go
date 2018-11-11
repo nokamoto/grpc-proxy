@@ -35,24 +35,20 @@ func TestProm_Observe(t *testing.T) {
 		}
 	}
 
-	write("x", codes.OK, 5, 10, 3*time.Millisecond)
-	write("x", codes.OK, 10, 15, 4*time.Millisecond)
-	write("y", codes.OK, 15, 20, 5*time.Millisecond)
+	write("x", codes.OK, 32, 64, 1500 * time.Millisecond)
+	write("x", codes.OK, 64, 128, 750 * time.Millisecond)
+	write("y", codes.OK, 128, 256, 250 * time.Millisecond)
 
-	counter := retriveProm(t, `request_count{method="x",status="OK"}`, port)
-	expected := `request_count{method="x",status="OK"} 2`
-	if counter != expected {
-		t.Errorf("%s != %s", counter, expected)
-	}
+	retriveProm(t, `request_count{method="x",status="OK"} 2`, port)
+	retriveProm(t, `request_count{method="y",status="OK"} 1`, port)
 
-	counter = retriveProm(t, `request_count{method="y",status="OK"}`, port)
-	expected = `request_count{method="y",status="OK"} 1`
-	if counter != expected {
-		t.Errorf("%s != %s", counter, expected)
-	}
+	retriveProm(t, `latency_seconds_bucket{method="x",status="OK",le="+Inf"} 2`, port)
+	retriveProm(t, `latency_seconds_bucket{method="x",status="OK",le="1"} 2`, port)
+	retriveProm(t, `latency_seconds_bucket{method="x",status="OK",le="0.5"} 1`, port)
+	retriveProm(t, `latency_seconds_bucket{method="y",status="OK",le="0.5"} 1`, port)
 }
 
-func retriveProm(t *testing.T, name string, port int) string {
+func retriveProm(t *testing.T, expected string, port int) {
 	res, err := http.Get(fmt.Sprintf("http://localhost:%d/metrics", port))
 	if err != nil {
 		t.Fatal(err)
@@ -65,14 +61,12 @@ func retriveProm(t *testing.T, name string, port int) string {
 	}
 
 	for _, line := range strings.Split(string(bytes), "\n") {
-		if strings.HasPrefix(line, name) {
-			return line
+		if expected == line {
+			return
 		}
 	}
 
-	t.Fatalf("%s not found: %s", name, string(bytes))
-
-	return ""
+	t.Fatalf("%s not found: %s", expected, string(bytes))
 }
 
 func beforeEachProm(t *testing.T, port int) func() {
