@@ -20,14 +20,14 @@ type Routes struct {
 }
 
 // NewRoutes returns Routes from the yaml configurations.
-func NewRoutes(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Clusters, observe *yaml.Observe) (*Routes, error) {
+func NewRoutes(fds *pb.FileDescriptorSet, yml *yaml.Yaml) (*Routes, error) {
 	r := &Routes{
 		routes: make(map[string]*route),
 	}
 
 	cs := make(map[string]cluster.Cluster)
 
-	for _, yc := range clusters.Clusters {
+	for _, yc := range yml.Clusters {
 		c, err := cluster.NewRoundRobin(yc)
 		if err != nil {
 			return nil, err
@@ -38,7 +38,7 @@ func NewRoutes(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Cl
 
 	ls := make(map[string]obs.Log)
 
-	for _, yl := range observe.Observe.Logs {
+	for _, yl := range yml.Observe.Logs {
 		l, err := obs.NewLog(yl)
 		if err != nil {
 			return nil, err
@@ -51,7 +51,7 @@ func NewRoutes(fds *pb.FileDescriptorSet, routes *yaml.Routes, clusters *yaml.Cl
 		for _, sd := range fd.GetService() {
 			for _, md := range sd.GetMethod() {
 				full := descriptor.FullMethod(fd, sd, md)
-				yr := routes.FindByFullMethod(full)
+				yr := yml.FindByFullMethod(full)
 
 				if len(yr) == 0 {
 					return nil, fmt.Errorf("%s has no route", full)

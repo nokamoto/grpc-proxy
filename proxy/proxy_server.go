@@ -19,7 +19,7 @@ type Server struct {
 // NewServer returns a gRPC server from the gRPC proxy server port, the file descriptor protocol buffers filepath,
 // and the yaml configuration filepath.NewProxyServer
 func NewServer(port int, pb, yml string) (*Server, error) {
-	routes, clusters, observe, err := yaml.NewYaml(yml)
+	y, err := yaml.NewYaml(yml)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func NewServer(port int, pb, yml string) (*Server, error) {
 		return nil, err
 	}
 
-	router, err := route.NewRoutes(desc, routes, clusters, observe)
+	router, err := route.NewRoutes(desc, y)
 	if err != nil {
 		return nil, err
 	}
