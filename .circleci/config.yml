@@ -14,7 +14,7 @@ jobs:
           working_directory: /go/src/github.com/nokamoto/grpc-proxy/examples/ping
           command: make
       - run: test -z "$(gofmt -l .)"
-      - run: golint $(go list ./... | grep -v /vendor/)
+      - run: golint -set_exit_status $(go list ./... | grep -v /vendor/)
       - run: dep ensure -vendor-only=true
       - run: go test ./...
   build-test:
