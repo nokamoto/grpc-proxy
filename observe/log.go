@@ -31,6 +31,16 @@ type log struct {
 	file *os.File
 }
 
-func (l *log) Write(method string, code codes.Code, req, res int, time time.Duration) (int, error) {
-	return fmt.Fprintf(l.file, `{"method":"%s","code":%d,"req":%d,"res":%d,"time":%d}%c`, method, code, req, res, time, '\n')
+func (l *log) Write(method string, code codes.Code, req, res int, nanos time.Duration) (int, error) {
+	return fmt.Fprintf(
+		l.file,
+		`{"ts":"%s","method":"%s","code":"%s","req":%d,"res":%d,"nanos":%d}%c`,
+		time.Now(),
+		method,
+		code,
+		req,
+		res,
+		nanos,
+		'\n',
+	)
 }
