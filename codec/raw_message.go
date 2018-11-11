@@ -20,3 +20,7 @@ func (m *RawMessage) Reset() {
 func (m *RawMessage) String() string {
 	return hex.EncodeToString(m.bytes)
 }
+
+func (m *RawMessage) Size() int {
+	return len(m.bytes)
+}
