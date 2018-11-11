@@ -11,18 +11,12 @@ type Routes struct {
 
 // Route represents a configuration of a single gRPC routing roule.
 type Route struct {
-	Method  Method
-	Cluster RouteCluster
-}
-
-// Method represents a gRPC service method matching rule.
-type Method struct {
-	Prefix string
-}
-
-// RouteCluster represents a configuration of a binding between the method and the cluster.
-type RouteCluster struct {
-	Name string
+	Method struct {
+		Prefix string
+	}
+	Cluster struct {
+		Name string
+	}
 }
 
 // FindByFullMethod returns all routes match fully qualified the gRPC service method name.
