@@ -35,8 +35,6 @@ func (p *proxy) invokeUnary(ctx context.Context, m *codec.RawMessage, method str
 		octx = metadata.NewOutgoingContext(octx, md)
 	}
 
-	fmt.Println(md)
-
 	var header, trailer metadata.MD
 
 	rep := new(codec.RawMessage)
@@ -56,8 +54,6 @@ func (p *proxy) invokeStreamC(downstream server.RawServerStreamC, desc *grpc.Str
 	if ok {
 		octx = metadata.NewOutgoingContext(octx, md)
 	}
-
-	fmt.Println(md)
 
 	var header, trailer metadata.MD
 
@@ -106,8 +102,6 @@ func (p *proxy) invokeStreamS(downstream server.RawServerStreamS, desc *grpc.Str
 	if ok {
 		octx = metadata.NewOutgoingContext(octx, md)
 	}
-
-	fmt.Println(md)
 
 	upstream, err := p.con.NewStream(octx, desc, method, grpc.CallCustomCodec(codec.RawCodec{}))
 	if err != nil {
@@ -164,8 +158,6 @@ func (p *proxy) invokeStreamB(downstream server.RawServerStreamB, desc *grpc.Str
 	if ok {
 		octx = metadata.NewOutgoingContext(octx, md)
 	}
-
-	fmt.Println(md)
 
 	upstream, err := p.con.NewStream(octx, desc, method, grpc.CallCustomCodec(codec.RawCodec{}))
 	if err != nil {
