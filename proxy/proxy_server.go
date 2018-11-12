@@ -12,8 +12,9 @@ import (
 
 // Server represents a gRPC server combined all routes.
 type Server struct {
-	srv *grpc.Server
-	lis net.Listener
+	srv    *grpc.Server
+	lis    net.Listener
+	router *route.Routes
 }
 
 // NewServer returns a gRPC server from the gRPC proxy server port, the file descriptor protocol buffers filepath,
@@ -47,7 +48,7 @@ func NewServer(port int, pb, yml string) (*Server, error) {
 		srv.RegisterService(sd, router)
 	}
 
-	return &Server{srv: srv, lis: lis}, nil
+	return &Server{srv: srv, lis: lis, router: router}, nil
 }
 
 // Serve starts the gRPC proxy server.
@@ -58,4 +59,5 @@ func (s *Server) Serve() error {
 // GracefulStop gracefully stops the gRPC proxy server.
 func (s *Server) GracefulStop() {
 	s.srv.GracefulStop()
+	s.router.Destroy()
 }

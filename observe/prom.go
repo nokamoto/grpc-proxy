@@ -11,6 +11,7 @@ import (
 
 type Prom interface {
 	Observe(string, codes.Code, int, int, time.Duration) error
+	Destroy()
 }
 
 func NewProm(c yaml.Prom) (Prom, error) {
@@ -92,4 +93,11 @@ func (p *prom) Observe(method string, code codes.Code, req int, res int, nanos t
 	hlatency.Observe(float64(nanos) / (1000 * 1000 * 1000))
 
 	return nil
+}
+
+func (p *prom) Destroy() {
+	prometheus.Unregister(p.counter)
+	prometheus.Unregister(p.hist.latency)
+	prometheus.Unregister(p.hist.req)
+	prometheus.Unregister(p.hist.res)
 }
