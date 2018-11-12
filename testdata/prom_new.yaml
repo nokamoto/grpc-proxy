@@ -1,0 +1,24 @@
+observe:
+  prom:
+    - name: one
+      buckets:
+        latency-seconds:
+          - 1.0
+          - 0.5
+        request-bytes:
+          - 256
+          - 128
+        response-bytes:
+          - 128
+          - 64
+    - name: two
+      buckets:
+        latency-seconds:
+          - 1.0
+          - 0.5
+        request-bytes:
+          - 256
+          - 128
+        response-bytes:
+          - 128
+          - 64

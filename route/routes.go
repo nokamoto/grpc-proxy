@@ -47,6 +47,17 @@ func NewRoutes(fds *pb.FileDescriptorSet, yml *yaml.Yaml) (*Routes, error) {
 		ls[yl.Name] = l
 	}
 
+	ps := make(map[string]obs.Prom)
+
+	for _, yp := range yml.Observe.Prom {
+		p, err := obs.NewProm(yp)
+		if err != nil {
+			return nil, err
+		}
+
+		ps[yp.Name] = p
+	}
+
 	for _, fd := range fds.File {
 		for _, sd := range fd.GetService() {
 			for _, md := range sd.GetMethod() {
@@ -71,7 +82,12 @@ func NewRoutes(fds *pb.FileDescriptorSet, yml *yaml.Yaml) (*Routes, error) {
 					return nil, fmt.Errorf("log %s is undefined", head.Observe.Log.Name)
 				}
 
-				r.routes[full] = &route{cluster: cluster, log: log}
+				prom, ok := ps[head.Observe.Prom.Name]
+				if !ok {
+					return nil, fmt.Errorf("prom %s is undefined", head.Observe.Prom.Name)
+				}
+
+				r.routes[full] = &route{cluster: cluster, log: log, prom: prom}
 			}
 		}
 	}
@@ -113,4 +129,11 @@ func (r *Routes) StreamB(stream server.RawServerStreamB, desc *grpc.StreamDesc, 
 		return grpc.Errorf(codes.Unknown, "[grpc-proxy] unknown")
 	}
 	return c.streamB(stream, desc, method)
+}
+
+// Destroy unregisters all prometheus collectors from the global default registerer for only testing purpose.
+func (r *Routes) Destroy() {
+	for _, r := range r.routes {
+		r.destroy()
+	}
 }

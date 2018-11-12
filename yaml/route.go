@@ -12,5 +12,8 @@ type Route struct {
 		Log struct {
 			Name string
 		}
+		Prom struct {
+			Name string
+		}
 	}
 }

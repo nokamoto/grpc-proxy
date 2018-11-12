@@ -16,6 +16,7 @@ import (
 type route struct {
 	cluster cluster.Cluster
 	log     observe.Log
+	prom    observe.Prom
 }
 
 func (r *route) unary(ctx context.Context, m *codec.RawMessage, method string) (*codec.RawMessage, error) {
@@ -25,9 +26,16 @@ func (r *route) unary(ctx context.Context, m *codec.RawMessage, method string) (
 
 	d := time.Since(start)
 
-	_, e := r.log.Write(method, status.Code(err), m.Size(), res.Size(), d)
+	code := status.Code(err)
+
+	_, e := r.log.Write(method, code, m.Size(), res.Size(), d)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "%s: unary access log error: %s\n", method, e)
+	}
+
+	e = r.prom.Observe(method, code, m.Size(), res.Size(), d)
+	if e != nil {
+		fmt.Fprintf(os.Stderr, "%s: unary prom: %s\n", method, e)
 	}
 
 	return res, err
@@ -40,9 +48,16 @@ func (r *route) streamC(stream server.RawServerStreamC, desc *grpc.StreamDesc, m
 
 	d := time.Since(start)
 
-	_, e := r.log.Write(method, status.Code(err), -1, -1, d)
+	code := status.Code(err)
+
+	_, e := r.log.Write(method, code, -1, -1, d)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "%s: stream c access log error: %s\n", method, e)
+	}
+
+	e = r.prom.Observe(method, code, -1, -1, d)
+	if e != nil {
+		fmt.Fprintf(os.Stderr, "%s: stream c prom: %s\n", method, e)
 	}
 
 	return err
@@ -55,9 +70,16 @@ func (r *route) streamS(stream server.RawServerStreamS, desc *grpc.StreamDesc, m
 
 	d := time.Since(start)
 
-	_, e := r.log.Write(method, status.Code(err), -1, -1, d)
+	code := status.Code(err)
+
+	_, e := r.log.Write(method, code, -1, -1, d)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "%s: stream s access log error: %s\n", method, e)
+	}
+
+	e = r.prom.Observe(method, code, -1, -1, d)
+	if e != nil {
+		fmt.Fprintf(os.Stderr, "%s: stream s prom: %s\n", method, e)
 	}
 
 	return err
@@ -70,10 +92,21 @@ func (r *route) streamB(stream server.RawServerStreamB, desc *grpc.StreamDesc, m
 
 	d := time.Since(start)
 
-	_, e := r.log.Write(method, status.Code(err), -1, -1, d)
+	code := status.Code(err)
+
+	_, e := r.log.Write(method, code, -1, -1, d)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "%s: stream b access log error: %s\n", method, e)
 	}
 
+	e = r.prom.Observe(method, code, -1, -1, d)
+	if e != nil {
+		fmt.Fprintf(os.Stderr, "%s: stream b prom: %s\n", method, e)
+	}
+
 	return err
+}
+
+func (r *route) destroy() {
+	r.prom.Destroy()
 }
