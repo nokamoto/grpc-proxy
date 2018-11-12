@@ -1,13 +1,15 @@
 package cluster
 
 import (
+	"fmt"
 	"github.com/nokamoto/grpc-proxy/codec"
 	"github.com/nokamoto/grpc-proxy/server"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"io"
-	"time"
+	"os"
 )
 
 type proxy struct {
@@ -26,17 +28,40 @@ func newProxy(address string) (*proxy, error) {
 }
 
 func (p *proxy) invokeUnary(ctx context.Context, m *codec.RawMessage, method string) (*codec.RawMessage, error) {
+	octx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs())
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		octx = metadata.NewOutgoingContext(octx, md)
+	}
+
+	fmt.Println(md)
+
+	var header, trailer metadata.MD
+
 	rep := new(codec.RawMessage)
-	err := p.con.Invoke(ctx, method, m, rep, grpc.CallCustomCodec(codec.RawCodec{}))
+
+	err := p.con.Invoke(octx, method, m, rep, grpc.CallCustomCodec(codec.RawCodec{}), grpc.Header(&header), grpc.Trailer(&trailer))
+
+	grpc.SetHeader(ctx, header)
+	grpc.SetTrailer(ctx, trailer)
+
 	return rep, err
 }
 
 func (p *proxy) invokeStreamC(downstream server.RawServerStreamC, desc *grpc.StreamDesc, method string) error {
-	// todo: timeout configuration.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	octx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs())
 
-	upstream, err := p.con.NewStream(ctx, desc, method, grpc.CallCustomCodec(codec.RawCodec{}))
+	md, ok := metadata.FromIncomingContext(downstream.Context())
+	if ok {
+		octx = metadata.NewOutgoingContext(octx, md)
+	}
+
+	fmt.Println(md)
+
+	var header, trailer metadata.MD
+
+	upstream, err := p.con.NewStream(octx, desc, method, grpc.CallCustomCodec(codec.RawCodec{}), grpc.Header(&header), grpc.Trailer(&trailer))
 	if err != nil {
 		return grpc.Errorf(codes.Internal, "[grpc-proxy] stream c error: %s", err)
 	}
@@ -57,6 +82,9 @@ func (p *proxy) invokeStreamC(downstream server.RawServerStreamC, desc *grpc.Str
 				return err
 			}
 
+			downstream.SetHeader(header)
+			downstream.SetTrailer(trailer)
+
 			return downstream.SendAndClose(res)
 		}
 
@@ -72,11 +100,16 @@ func (p *proxy) invokeStreamC(downstream server.RawServerStreamC, desc *grpc.Str
 }
 
 func (p *proxy) invokeStreamS(downstream server.RawServerStreamS, desc *grpc.StreamDesc, method string) error {
-	// todo: timeout configuration.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	octx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs())
 
-	upstream, err := p.con.NewStream(ctx, desc, method, grpc.CallCustomCodec(codec.RawCodec{}))
+	md, ok := metadata.FromIncomingContext(downstream.Context())
+	if ok {
+		octx = metadata.NewOutgoingContext(octx, md)
+	}
+
+	fmt.Println(md)
+
+	upstream, err := p.con.NewStream(octx, desc, method, grpc.CallCustomCodec(codec.RawCodec{}))
 	if err != nil {
 		return grpc.Errorf(codes.Internal, "[grpc-proxy] stream s error: %s", err)
 	}
@@ -91,15 +124,29 @@ func (p *proxy) invokeStreamS(downstream server.RawServerStreamS, desc *grpc.Str
 		return err
 	}
 
+	headerCheck := true
+
 	for {
 		m := new(codec.RawMessage)
 		err = upstream.RecvMsg(m)
 		if err == io.EOF {
+			downstream.SetTrailer(upstream.Trailer())
 			return nil
 		}
 
 		if err != nil {
 			return err
+		}
+
+		if headerCheck {
+			h, err := upstream.Header()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "stream s upstream header error: %s", err)
+			}
+			if err == nil {
+				downstream.SetHeader(h)
+			}
+			headerCheck = false
 		}
 
 		err = downstream.Send(m)
@@ -109,12 +156,18 @@ func (p *proxy) invokeStreamS(downstream server.RawServerStreamS, desc *grpc.Str
 	}
 }
 
+// TODO: matadata proxy
 func (p *proxy) invokeStreamB(downstream server.RawServerStreamB, desc *grpc.StreamDesc, method string) error {
-	// todo: timeout configuration.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	octx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs())
 
-	upstream, err := p.con.NewStream(ctx, desc, method, grpc.CallCustomCodec(codec.RawCodec{}))
+	md, ok := metadata.FromIncomingContext(downstream.Context())
+	if ok {
+		octx = metadata.NewOutgoingContext(octx, md)
+	}
+
+	fmt.Println(md)
+
+	upstream, err := p.con.NewStream(octx, desc, method, grpc.CallCustomCodec(codec.RawCodec{}))
 	if err != nil {
 		return grpc.Errorf(codes.Internal, "[grpc-proxy] stream b error: %s", err)
 	}
