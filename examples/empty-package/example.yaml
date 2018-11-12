@@ -28,10 +28,6 @@ observe:
         request-bytes:
           - 256
           - 128
-          - 64
-          - 32
         response-bytes:
-          - 256
           - 128
           - 64
-          - 32

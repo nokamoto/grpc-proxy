@@ -1,6 +1,7 @@
 package observe
 
 import (
+	"fmt"
 	"github.com/nokamoto/grpc-proxy/yaml"
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc/codes"
@@ -15,7 +16,7 @@ type Prom interface {
 func NewProm(c yaml.Prom) (Prom, error) {
 	labels := []string{"method", "status"}
 
-	counter := prometheus.NewCounterVec(prometheus.CounterOpts{Name: "request_count"}, labels)
+	counter := prometheus.NewCounterVec(prometheus.CounterOpts{Name: fmt.Sprintf("%s_request_count", c.Name)}, labels)
 
 	err := prometheus.Register(counter)
 	if err != nil {
@@ -28,7 +29,7 @@ func NewProm(c yaml.Prom) (Prom, error) {
 	}
 
 	hist := func(name string, buckets []float64) (*prometheus.HistogramVec, error) {
-		h := prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: name, Buckets: sorted(buckets)}, labels)
+		h := prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: fmt.Sprintf("%s_%s", c.Name, name), Buckets: sorted(buckets)}, labels)
 		err := prometheus.Register(h)
 		return h, err
 	}
@@ -88,7 +89,7 @@ func (p *prom) Observe(method string, code codes.Code, req int, res int, nanos t
 	c.Inc()
 	hreq.Observe(float64(req))
 	hres.Observe(float64(res))
-	hlatency.Observe(float64(nanos / (1000 * 1000 * 1000)))
+	hlatency.Observe(float64(nanos) / (1000 * 1000 * 1000))
 
 	return nil
 }
