@@ -1,5 +1,6 @@
 package yaml
 
+// Prom represents a configuration of Prometheus gRPC proxy metrics.
 type Prom struct {
 	Name    string
 	Buckets struct {

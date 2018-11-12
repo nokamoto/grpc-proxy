@@ -9,11 +9,13 @@ import (
 	"time"
 )
 
+// Prom represents a collection of collectors which observes request count, latency, and request/response size.
 type Prom interface {
 	Observe(string, codes.Code, int, int, time.Duration) error
 	Destroy()
 }
 
+// NewProm returns Prom from the yaml configuration.
 func NewProm(c yaml.Prom) (Prom, error) {
 	labels := []string{"method", "status"}
 

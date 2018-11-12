@@ -131,6 +131,7 @@ func (r *Routes) StreamB(stream server.RawServerStreamB, desc *grpc.StreamDesc, 
 	return c.streamB(stream, desc, method)
 }
 
+// Destroy unregisters all prometheus collectors from the global default registerer for only testing purpose.
 func (r *Routes) Destroy() {
 	for _, r := range r.routes {
 		r.destroy()
