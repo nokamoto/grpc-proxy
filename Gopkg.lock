@@ -181,10 +181,12 @@
   input-imports = [
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/protoc-gen-go/descriptor",
+    "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "golang.org/x/net/context",
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
+    "google.golang.org/grpc/metadata",
     "google.golang.org/grpc/status",
     "gopkg.in/yaml.v2",
   ]
