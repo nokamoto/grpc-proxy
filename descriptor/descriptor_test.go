@@ -6,7 +6,7 @@ import (
 )
 
 func Test_descriptor_empty_package(t *testing.T) {
-	desc, err := NewDescriptor("../examples/empty-package/example.pb")
+	desc, err := NewDescriptor("../testdata/protobuf/service/service.pb")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,7 +18,7 @@ func Test_descriptor_empty_package(t *testing.T) {
 		t.Errorf("%s != %s", s, service)
 	}
 
-	metadata := "example.proto"
+	metadata := "testdata/protobuf/service/service.proto"
 	if s := sds[0].Metadata; s != metadata {
 		t.Errorf("%s != %s", s, metadata)
 	}
@@ -30,7 +30,7 @@ func Test_descriptor_empty_package(t *testing.T) {
 }
 
 func Test_descriptor_ping(t *testing.T) {
-	desc, err := NewDescriptor("../examples/ping/example.pb")
+	desc, err := NewDescriptor("../testdata/protobuf/ping/ping.pb")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func Test_descriptor_ping(t *testing.T) {
 		t.Errorf("%s != %s", s, service)
 	}
 
-	metadata := "example.proto"
+	metadata := "testdata/protobuf/ping/ping.proto"
 	if s := sds[0].Metadata; s != metadata {
 		t.Errorf("%s != %s", s, metadata)
 	}

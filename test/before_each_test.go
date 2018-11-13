@@ -6,6 +6,7 @@ import (
 )
 
 func beforeEachGrpcProxy(t *testing.T, port int, pb, yml string) func() {
+	t.Helper()
 	srv, err := proxy.NewServer(port, pb, yml)
 	if err != nil {
 		t.Fatal(err)

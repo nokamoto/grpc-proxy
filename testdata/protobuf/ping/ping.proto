@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ping;
 
+option go_package = "github.com/nokamoto/grpc-proxy/test";
+
 message Ping {
   int64 ts = 1;
 }

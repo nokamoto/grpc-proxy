@@ -13,7 +13,7 @@ import (
 )
 
 func TestProm_NewProm(t *testing.T) {
-	yml, err := yaml.NewYaml("../testdata/prom_new.yaml")
+	yml, err := yaml.NewYaml("../testdata/yaml/prom_new.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func TestProm_NewProm(t *testing.T) {
 }
 
 func TestProm_NewProm_duplicated(t *testing.T) {
-	yml, err := yaml.NewYaml("../testdata/prom_duplicated.yaml")
+	yml, err := yaml.NewYaml("../testdata/yaml/prom_duplicated.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,7 +52,7 @@ func TestProm_Observe(t *testing.T) {
 	afterEachProm := beforeEachProm(t, port)
 	defer afterEachProm()
 
-	yml, err := yaml.NewYaml("../testdata/prom.yaml")
+	yml, err := yaml.NewYaml("../testdata/yaml/prom.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
