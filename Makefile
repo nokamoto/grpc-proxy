@@ -30,6 +30,7 @@ fmt:
 	gofmt -w .
 
 test: all
+	dep check
 	go test ./...
 	test -z `gofmt -l .`
 	golint -set_exit_status `go list ./... | grep -v /vendor/`
