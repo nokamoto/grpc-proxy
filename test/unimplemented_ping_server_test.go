@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	pb "github.com/nokamoto/grpc-proxy/examples/ping"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -16,7 +15,7 @@ func TestUnimplementedPingServer_Send(t *testing.T) {
 	ctx, c, afterEach := beforeEachUnimplementedPing(t, 9000)
 	defer afterEach()
 
-	ping := pb.Ping{Ts: time.Now().Unix()}
+	ping := Ping{Ts: time.Now().Unix()}
 
 	_, err := c.Send(ctx, &ping)
 	if code := status.Code(err); code != codes.Unimplemented {
@@ -33,9 +32,9 @@ func TestUnimplementedPingServer_SendStreamC(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	source := make([]*pb.Ping, 0)
+	source := make([]*Ping, 0)
 	for i := 0; i < 10; i++ {
-		ping := &pb.Ping{Ts: time.Now().Unix()}
+		ping := &Ping{Ts: time.Now().Unix()}
 
 		err = stream.Send(ping)
 		if err != nil {
@@ -55,7 +54,7 @@ func TestUnimplementedPingServer_SendStreamS(t *testing.T) {
 	ctx, c, afterEach := beforeEachUnimplementedPing(t, 9000)
 	defer afterEach()
 
-	ping := &pb.Ping{Ts: time.Now().Unix()}
+	ping := &Ping{Ts: time.Now().Unix()}
 
 	stream, err := c.SendStreamS(ctx, ping)
 	if err != nil {
@@ -77,7 +76,7 @@ func TestUnimplementedPingServer_SendStreamB(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ping := &pb.Ping{Ts: time.Now().Unix()}
+	ping := &Ping{Ts: time.Now().Unix()}
 
 	err = stream.Send(ping)
 	if err != nil {
@@ -90,9 +89,9 @@ func TestUnimplementedPingServer_SendStreamB(t *testing.T) {
 	}
 }
 
-func beforeEachUnimplementedPing(t *testing.T, port int) (context.Context, pb.PingServiceClient, func()) {
+func beforeEachUnimplementedPing(t *testing.T, port int) (context.Context, PingServiceClient, func()) {
 	afterEachServer := beforeEachUnimplementedPingServer(t, 9002)
-	afterEachGrpcProxy := beforeEachGrpcProxy(t, port, "../examples/ping/example.pb", "../examples/ping/example.yaml")
+	afterEachGrpcProxy := beforeEachGrpcProxy(t, port, "../testdata/protobuf/ping/ping.pb", "../testdata/yaml/ping.yaml")
 
 	cc, err := grpc.Dial(fmt.Sprintf("%s:%d", "localhost", port), grpc.WithInsecure())
 	if err != nil {
@@ -101,7 +100,7 @@ func beforeEachUnimplementedPing(t *testing.T, port int) (context.Context, pb.Pi
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
-	return ctx, pb.NewPingServiceClient(cc), func() {
+	return ctx, NewPingServiceClient(cc), func() {
 		cc.Close()
 		cancel()
 
@@ -120,7 +119,7 @@ func beforeEachUnimplementedPingServer(t *testing.T, port int) func() {
 	opts := []grpc.ServerOption{}
 	srv := grpc.NewServer(opts...)
 
-	pb.RegisterPingServiceServer(srv, &UnimplementedPingServer{})
+	RegisterPingServiceServer(srv, &UnimplementedPingServer{})
 
 	go func() {
 		srv.Serve(lis)

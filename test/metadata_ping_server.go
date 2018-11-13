@@ -1,7 +1,6 @@
 package test
 
 import (
-	pb "github.com/nokamoto/grpc-proxy/examples/ping"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -9,7 +8,7 @@ import (
 	"io"
 )
 
-// MetadataPingServer implements pb.PingServiceServer only for test.
+// MetadataPingServer implements PingServiceServer only for test.
 type MetadataPingServer struct {
 	key     string
 	header  func(string, []string) metadata.MD
@@ -17,7 +16,7 @@ type MetadataPingServer struct {
 }
 
 // Send returns Metadata.
-func (s *MetadataPingServer) Send(ctx context.Context, m *pb.Ping) (*pb.Pong, error) {
+func (s *MetadataPingServer) Send(ctx context.Context, m *Ping) (*Pong, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, grpc.Errorf(codes.InvalidArgument, "metadata not found")
@@ -26,11 +25,11 @@ func (s *MetadataPingServer) Send(ctx context.Context, m *pb.Ping) (*pb.Pong, er
 	grpc.SetHeader(ctx, s.header(s.key, md.Get(s.key)))
 	grpc.SetTrailer(ctx, s.trailer(s.key, md.Get(s.key)))
 
-	return &pb.Pong{}, nil
+	return &Pong{}, nil
 }
 
 // SendStreamC returns Metadata.
-func (s *MetadataPingServer) SendStreamC(stream pb.PingService_SendStreamCServer) error {
+func (s *MetadataPingServer) SendStreamC(stream PingService_SendStreamCServer) error {
 	md, ok := metadata.FromIncomingContext(stream.Context())
 	if !ok {
 		return grpc.Errorf(codes.InvalidArgument, "metadata not found")
@@ -43,7 +42,7 @@ func (s *MetadataPingServer) SendStreamC(stream pb.PingService_SendStreamCServer
 		_, err := stream.Recv()
 
 		if err == io.EOF {
-			return stream.SendAndClose(&pb.Pong{})
+			return stream.SendAndClose(&Pong{})
 		}
 
 		if err != nil {
@@ -53,7 +52,7 @@ func (s *MetadataPingServer) SendStreamC(stream pb.PingService_SendStreamCServer
 }
 
 // SendStreamS returns Metadata.
-func (s *MetadataPingServer) SendStreamS(m *pb.Ping, stream pb.PingService_SendStreamSServer) error {
+func (s *MetadataPingServer) SendStreamS(m *Ping, stream PingService_SendStreamSServer) error {
 	md, ok := metadata.FromIncomingContext(stream.Context())
 	if !ok {
 		return grpc.Errorf(codes.InvalidArgument, "metadata not found")
@@ -63,7 +62,7 @@ func (s *MetadataPingServer) SendStreamS(m *pb.Ping, stream pb.PingService_SendS
 	stream.SetTrailer(s.trailer(s.key, md.Get(s.key)))
 
 	for i := 0; i < 10; i++ {
-		err := stream.Send(&pb.Pong{})
+		err := stream.Send(&Pong{})
 		if err != nil {
 			return err
 		}
@@ -72,7 +71,7 @@ func (s *MetadataPingServer) SendStreamS(m *pb.Ping, stream pb.PingService_SendS
 }
 
 // SendStreamB returns Metadata.
-func (s *MetadataPingServer) SendStreamB(stream pb.PingService_SendStreamBServer) error {
+func (s *MetadataPingServer) SendStreamB(stream PingService_SendStreamBServer) error {
 	md, ok := metadata.FromIncomingContext(stream.Context())
 	if !ok {
 		return grpc.Errorf(codes.InvalidArgument, "metadata not found")
@@ -91,7 +90,7 @@ func (s *MetadataPingServer) SendStreamB(stream pb.PingService_SendStreamBServer
 			return err
 		}
 
-		err = stream.Send(&pb.Pong{})
+		err = stream.Send(&Pong{})
 		if err != nil {
 			return err
 		}

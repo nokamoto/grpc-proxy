@@ -1,27 +1,26 @@
 package test
 
 import (
-	pb "github.com/nokamoto/grpc-proxy/examples/ping"
 	"golang.org/x/net/context"
 	"io"
 	"time"
 )
 
-// PingServer implements pb.PingServiceServer only for test.
+// PingServer implements PingServiceServer only for test.
 type PingServer struct{}
 
-func (s *PingServer) pong(source []*pb.Ping) *pb.Pong {
-	return &pb.Pong{Source: source, Ts: time.Now().Unix()}
+func (s *PingServer) pong(source []*Ping) *Pong {
+	return &Pong{Source: source, Ts: time.Now().Unix()}
 }
 
-// Send returns pb.Pong.
-func (s *PingServer) Send(_ context.Context, m *pb.Ping) (*pb.Pong, error) {
-	return s.pong([]*pb.Ping{m}), nil
+// Send returns Pong.
+func (s *PingServer) Send(_ context.Context, m *Ping) (*Pong, error) {
+	return s.pong([]*Ping{m}), nil
 }
 
-// SendStreamC returns pb.Pong.
-func (s *PingServer) SendStreamC(stream pb.PingService_SendStreamCServer) error {
-	source := make([]*pb.Ping, 0)
+// SendStreamC returns Pong.
+func (s *PingServer) SendStreamC(stream PingService_SendStreamCServer) error {
+	source := make([]*Ping, 0)
 	for {
 		m, err := stream.Recv()
 
@@ -37,10 +36,10 @@ func (s *PingServer) SendStreamC(stream pb.PingService_SendStreamCServer) error 
 	}
 }
 
-// SendStreamS returns pb.Pong.
-func (s *PingServer) SendStreamS(m *pb.Ping, stream pb.PingService_SendStreamSServer) error {
+// SendStreamS returns Pong.
+func (s *PingServer) SendStreamS(m *Ping, stream PingService_SendStreamSServer) error {
 	for i := 0; i < 10; i++ {
-		err := stream.Send(s.pong([]*pb.Ping{m}))
+		err := stream.Send(s.pong([]*Ping{m}))
 		if err != nil {
 			return err
 		}
@@ -48,8 +47,8 @@ func (s *PingServer) SendStreamS(m *pb.Ping, stream pb.PingService_SendStreamSSe
 	return nil
 }
 
-// SendStreamB returns pb.Pong.
-func (s *PingServer) SendStreamB(stream pb.PingService_SendStreamBServer) error {
+// SendStreamB returns Pong.
+func (s *PingServer) SendStreamB(stream PingService_SendStreamBServer) error {
 	for {
 		m, err := stream.Recv()
 		if err == io.EOF {
@@ -60,7 +59,7 @@ func (s *PingServer) SendStreamB(stream pb.PingService_SendStreamBServer) error 
 			return err
 		}
 
-		err = stream.Send(s.pong([]*pb.Ping{m}))
+		err = stream.Send(s.pong([]*Ping{m}))
 		if err != nil {
 			return err
 		}
