@@ -25,12 +25,8 @@ $(service_pb): $(service_proto)
 clean:
 	rm $(objs)
 
-fmt:
-	gofmt -d .
-	gofmt -w .
-
 test: all
 	dep check
 	go test ./...
-	test -z `gofmt -l .`
+	test -z `go fmt ./...`
 	golint -set_exit_status `go list ./... | grep -v /vendor/`
