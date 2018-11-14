@@ -3,8 +3,16 @@ routes:
       prefix: /
     cluster:
       name: local
+    observe:
+      log:
+        name: stdout
 
 clusters:
   - name: local
     round_robin:
       - localhost:9002
+
+observe:
+  logs:
+    - name: stdout
+      file: /dev/stdout

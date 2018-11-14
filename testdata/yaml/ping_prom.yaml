@@ -1,0 +1,27 @@
+routes:
+  - method:
+      prefix: /
+    cluster:
+      name: local
+    observe:
+      prom:
+        name: default
+
+clusters:
+  - name: local
+    round_robin:
+      - localhost:9002
+
+observe:
+  prom:
+    - name: default
+      buckets:
+        latency-seconds:
+          - 1.0
+          - 0.5
+        request-bytes:
+          - 256
+          - 128
+        response-bytes:
+          - 128
+          - 64

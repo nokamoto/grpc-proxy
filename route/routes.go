@@ -77,14 +77,22 @@ func NewRoutes(fds *pb.FileDescriptorSet, yml *yaml.Yaml) (*Routes, error) {
 					return nil, fmt.Errorf("cluster %s is undefined", head.Cluster.Name)
 				}
 
-				log, ok := ls[head.Observe.Log.Name]
-				if !ok {
-					return nil, fmt.Errorf("log %s is undefined", head.Observe.Log.Name)
+				var log *obs.Log
+				if name := head.Observe.Log.Name; name != nil {
+					found, ok := ls[*name]
+					if !ok {
+						return nil, fmt.Errorf("log %s is undefined", *name)
+					}
+					log = &found
 				}
 
-				prom, ok := ps[head.Observe.Prom.Name]
-				if !ok {
-					return nil, fmt.Errorf("prom %s is undefined", head.Observe.Prom.Name)
+				var prom *obs.Prom
+				if name := head.Observe.Prom.Name; name != nil {
+					found, ok := ps[*name]
+					if !ok {
+						return nil, fmt.Errorf("prom %s is undefined", *name)
+					}
+					prom = &found
 				}
 
 				r.routes[full] = &route{cluster: cluster, log: log, prom: prom}

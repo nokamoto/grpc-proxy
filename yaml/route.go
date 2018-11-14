@@ -10,10 +10,10 @@ type Route struct {
 	}
 	Observe struct {
 		Log struct {
-			Name string
+			Name *string
 		}
 		Prom struct {
-			Name string
+			Name *string
 		}
 	}
 }
