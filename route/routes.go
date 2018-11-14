@@ -65,9 +65,9 @@ func NewRoutes(fds *pb.FileDescriptorSet, yml *yaml.Yaml) (*Routes, error) {
 				yr := yml.FindByFullMethod(full)
 
 				if len(yr) == 0 {
-					return nil, fmt.Errorf("%s has no route", full)
+					return nil, &missingRoutesError{method: full}
 				} else if len(yr) > 1 {
-					return nil, fmt.Errorf("%s has ambiguous routes: %v", full, yr)
+					return nil, &ambiguousRoutesError{method: full, candidates: yr}
 				}
 
 				head := yr[0]

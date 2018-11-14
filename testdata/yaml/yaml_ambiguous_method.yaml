@@ -1,0 +1,4 @@
+routes:
+  - method:
+      prefix: /
+      equal: /

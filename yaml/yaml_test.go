@@ -11,8 +11,8 @@ func Test_NewYaml_ping(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if s := yaml.Routes[0].Method.Prefix; s != "/" {
-		t.Errorf("%s != /", s)
+	if s := yaml.Routes[0].Method.Prefix; *s != "/" {
+		t.Errorf("%s != /", *s)
 	}
 	if s := yaml.Routes[0].Cluster.Name; s != "local" {
 		t.Errorf("%s != local", s)
@@ -36,6 +36,25 @@ func Test_NewYaml_ping(t *testing.T) {
 	}
 	if l := len(yaml.Observe.Prom); l != 0 {
 		t.Errorf("%d != 0", l)
+	}
+}
+
+func Test_NewYaml_ping_method_equal(t *testing.T) {
+	yaml, err := NewYaml("../testdata/yaml/ping_method_equal.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	methods := []string{
+		"/ping.PingService/Send",
+		"/ping.PingService/SendStreamC",
+		"/ping.PingService/SendStreamS",
+		"/ping.PingService/SendStreamB",
+	}
+	for i, method := range methods {
+		if s := yaml.Routes[i].Method.Equal; *s != method {
+			t.Errorf("%s != %s", *s, method)
+		}
 	}
 }
 
@@ -91,4 +110,16 @@ func Test_NewYaml_ping_prom(t *testing.T) {
 	if x, y := prom[0].Buckets.ResponseBytes, []float64{128.0, 64.0}; !reflect.DeepEqual(x, y) {
 		t.Errorf("%v != %v", x, y)
 	}
+}
+
+func Test_NewYaml_errors(t *testing.T) {
+	check := func(y string) {
+		yaml, err := NewYaml(y)
+		if err == nil {
+			t.Fatalf("%v", yaml)
+		}
+	}
+
+	check("../testdata/yaml/yaml_ambiguous_method.yaml")
+	check("../testdata/yaml/yaml_no_method.yaml")
 }
