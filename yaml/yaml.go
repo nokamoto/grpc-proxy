@@ -11,10 +11,7 @@ import (
 type Yaml struct {
 	Routes   []Route
 	Clusters []Cluster
-	Observe  struct {
-		Logs []Log
-		Prom []Prom
-	}
+	Observe  observe
 }
 
 // NewYaml returns routes and clusters configurations read from the yaml file.

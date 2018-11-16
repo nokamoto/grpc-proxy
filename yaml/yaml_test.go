@@ -1,115 +1,89 @@
 package yaml
 
 import (
+	"fmt"
+	"gopkg.in/yaml.v2"
 	"reflect"
 	"testing"
 )
 
 func Test_NewYaml_ping(t *testing.T) {
-	yaml, err := NewYaml("../testdata/yaml/ping.yaml")
-	if err != nil {
-		t.Fatal(err)
+	expected := &Yaml{
+		Routes: []Route{
+			prefix("/", routeObserve{}),
+		},
+		Clusters: defaultClusters(),
 	}
 
-	if s := yaml.Routes[0].Method.Prefix; *s != "/" {
-		t.Errorf("%s != /", *s)
-	}
-	if s := yaml.Routes[0].Cluster.Name; s != "local" {
-		t.Errorf("%s != local", s)
-	}
-	if s := yaml.Routes[0].Observe.Log.Name; s != nil {
-		t.Fatal(*s)
-	}
-	if s := yaml.Routes[0].Observe.Prom.Name; s != nil {
-		t.Fatal(*s)
-	}
-
-	if s := yaml.Clusters[0].Name; s != "local" {
-		t.Errorf("%s != local", s)
-	}
-	if s := yaml.Clusters[0].RoundRobin[0]; s != "localhost:9002" {
-		t.Errorf("%s != localhost:9002", s)
-	}
-
-	if l := len(yaml.Observe.Logs); l != 0 {
-		t.Errorf("%d != 0", l)
-	}
-	if l := len(yaml.Observe.Prom); l != 0 {
-		t.Errorf("%d != 0", l)
-	}
+	test(t, "ping.yaml", expected)
 }
 
 func Test_NewYaml_ping_method_equal(t *testing.T) {
-	yaml, err := NewYaml("../testdata/yaml/ping_method_equal.yaml")
-	if err != nil {
-		t.Fatal(err)
+	expected := &Yaml{
+		Routes: []Route{
+			eq("/ping.PingService/Send", routeObserve{}),
+			eq("/ping.PingService/SendStreamC", routeObserve{}),
+			eq("/ping.PingService/SendStreamS", routeObserve{}),
+			eq("/ping.PingService/SendStreamB", routeObserve{}),
+		},
+		Clusters: defaultClusters(),
 	}
 
-	methods := []string{
-		"/ping.PingService/Send",
-		"/ping.PingService/SendStreamC",
-		"/ping.PingService/SendStreamS",
-		"/ping.PingService/SendStreamB",
-	}
-	for i, method := range methods {
-		if s := yaml.Routes[i].Method.Equal; *s != method {
-			t.Errorf("%s != %s", *s, method)
-		}
-	}
+	test(t, "ping_method_equal.yaml", expected)
 }
 
 func Test_NewYaml_ping_log(t *testing.T) {
-	yaml, err := NewYaml("../testdata/yaml/ping_log.yaml")
-	if err != nil {
-		t.Fatal(err)
+	expected := &Yaml{
+		Routes: []Route{
+			prefix("/", routeObserve{
+				Log: routeObserveLog{
+					Name: ref("stdout"),
+				},
+			}),
+		},
+		Clusters: defaultClusters(),
+		Observe: observe{
+			Logs: []Log{
+				Log{
+					Name: "stdout",
+					File: "/dev/stdout",
+				},
+			},
+		},
 	}
 
-	if s := yaml.Routes[0].Observe.Log.Name; *s != "stdout" {
-		t.Errorf("%s != stdout", *s)
-	}
-
-	if yaml.Observe.Logs == nil {
-		t.Fatal()
-	}
-
-	logs := yaml.Observe.Logs
-
-	if s := logs[0].Name; s != "stdout" {
-		t.Errorf("%s != stdout", s)
-	}
-	if s := logs[0].File; s != "/dev/stdout" {
-		t.Errorf("%s != /dev/stdout", s)
-	}
+	test(t, "ping_log.yaml", expected)
 }
 
 func Test_NewYaml_ping_prom(t *testing.T) {
-	yaml, err := NewYaml("../testdata/yaml/ping_prom.yaml")
-	if err != nil {
-		t.Fatal(err)
+	expected := &Yaml{
+		Routes: []Route{
+			prefix("/", routeObserve{
+				Prom: routeObserveProm{
+					Name: ref("default"),
+				},
+			}),
+		},
+		Clusters: defaultClusters(),
+		Observe: observe{
+			Prom: []Prom{
+				Prom{
+					Name: "default",
+					Buckets: promBuckets{
+						LatencySeconds: []float64{1.0, 0.5},
+						RequestBytes:   []float64{256.0, 128.0},
+						ResponseBytes:  []float64{128.0, 64.0},
+					},
+				},
+			},
+		},
 	}
 
-	if s := yaml.Routes[0].Observe.Prom.Name; *s != "default" {
-		t.Errorf("%s != stdout", *s)
-	}
+	test(t, "ping_prom.yaml", expected)
+}
 
-	if yaml.Observe.Prom == nil {
-		t.Fatal()
-	}
-
-	prom := yaml.Observe.Prom
-
-	if s := prom[0].Name; s != "default" {
-		t.Errorf("%s != default", s)
-	}
-	if x, y := prom[0].Buckets.LatencySeconds, []float64{1.0, 0.5}; !reflect.DeepEqual(x, y) {
-		t.Errorf("%v != %v", x, y)
-	}
-	if x, y := prom[0].Buckets.RequestBytes, []float64{256.0, 128.0}; !reflect.DeepEqual(x, y) {
-		t.Errorf("%v != %v", x, y)
-	}
-	if x, y := prom[0].Buckets.ResponseBytes, []float64{128.0, 64.0}; !reflect.DeepEqual(x, y) {
-		t.Errorf("%v != %v", x, y)
-	}
+func ref(s string) *string {
+	return &s
 }
 
 func Test_NewYaml_errors(t *testing.T) {
@@ -122,4 +96,52 @@ func Test_NewYaml_errors(t *testing.T) {
 
 	check("../testdata/yaml/yaml_ambiguous_method.yaml")
 	check("../testdata/yaml/yaml_no_method.yaml")
+}
+
+func defaultClusters() []Cluster {
+	return []Cluster{
+		Cluster{
+			Name:       "local",
+			RoundRobin: []string{"localhost:9002"},
+		},
+	}
+}
+
+func prefix(s string, observe routeObserve) Route {
+	return Route{
+		Method:  routeMethod{Prefix: &s},
+		Cluster: routeCluster{Name: "local"},
+		Observe: observe,
+	}
+}
+
+func eq(s string, observe routeObserve) Route {
+	return Route{
+		Method:  routeMethod{Equal: &s},
+		Cluster: routeCluster{Name: "local"},
+		Observe: observe,
+	}
+}
+
+func test(t *testing.T, file string, expected *Yaml) {
+	t.Helper()
+
+	actual, err := NewYaml(fmt.Sprintf("../testdata/yaml/%s", file))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(actual, expected) {
+		l, err := yaml.Marshal(actual)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		r, err := yaml.Marshal(expected)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Errorf("%s != %s", string(l), string(r))
+	}
 }

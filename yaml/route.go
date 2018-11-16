@@ -6,21 +6,31 @@ import (
 
 // Route represents a configuration of a single gRPC routing roule.
 type Route struct {
-	Method struct {
-		Prefix *string `yaml:",omitempty"`
-		Equal  *string `yaml:",omitempty"`
-	}
-	Cluster struct {
-		Name string
-	}
-	Observe struct {
-		Log struct {
-			Name *string
-		}
-		Prom struct {
-			Name *string
-		}
-	}
+	Method  routeMethod
+	Cluster routeCluster
+	Observe routeObserve
+}
+
+type routeMethod struct {
+	Prefix *string `yaml:",omitempty"`
+	Equal  *string `yaml:",omitempty"`
+}
+
+type routeCluster struct {
+	Name string
+}
+
+type routeObserve struct {
+	Log  routeObserveLog
+	Prom routeObserveProm
+}
+
+type routeObserveLog struct {
+	Name *string
+}
+
+type routeObserveProm struct {
+	Name *string
 }
 
 func (r Route) validate() error {
