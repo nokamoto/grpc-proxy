@@ -12,6 +12,7 @@ type Yaml struct {
 	Routes   []Route
 	Clusters []Cluster
 	Observe  observe
+	Clients  []Client
 }
 
 // NewYaml returns routes and clusters configurations read from the yaml file.

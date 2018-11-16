@@ -9,6 +9,7 @@ type Route struct {
 	Method  routeMethod
 	Cluster routeCluster
 	Observe routeObserve
+	Auth    routeAuth
 }
 
 type routeMethod struct {
@@ -31,6 +32,16 @@ type routeObserveLog struct {
 
 type routeObserveProm struct {
 	Name *string
+}
+
+type routeAuth struct {
+	KeyAuth *routeKeyAuth `yaml:"key_auth"`
+}
+
+type routeKeyAuth struct {
+	Metadata        string
+	Anonymous       *string
+	HideCredentials bool `yaml:"hide_credentials"`
 }
 
 func (r Route) validate() error {

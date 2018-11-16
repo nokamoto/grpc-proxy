@@ -10,7 +10,7 @@ import (
 func Test_NewYaml_ping(t *testing.T) {
 	expected := &Yaml{
 		Routes: []Route{
-			prefix("/", routeObserve{}),
+			prefix("/", routeObserve{}, routeAuth{}),
 		},
 		Clusters: defaultClusters(),
 	}
@@ -21,10 +21,10 @@ func Test_NewYaml_ping(t *testing.T) {
 func Test_NewYaml_ping_method_equal(t *testing.T) {
 	expected := &Yaml{
 		Routes: []Route{
-			eq("/ping.PingService/Send", routeObserve{}),
-			eq("/ping.PingService/SendStreamC", routeObserve{}),
-			eq("/ping.PingService/SendStreamS", routeObserve{}),
-			eq("/ping.PingService/SendStreamB", routeObserve{}),
+			eq("/ping.PingService/Send", routeObserve{}, routeAuth{}),
+			eq("/ping.PingService/SendStreamC", routeObserve{}, routeAuth{}),
+			eq("/ping.PingService/SendStreamS", routeObserve{}, routeAuth{}),
+			eq("/ping.PingService/SendStreamB", routeObserve{}, routeAuth{}),
 		},
 		Clusters: defaultClusters(),
 	}
@@ -35,11 +35,15 @@ func Test_NewYaml_ping_method_equal(t *testing.T) {
 func Test_NewYaml_ping_log(t *testing.T) {
 	expected := &Yaml{
 		Routes: []Route{
-			prefix("/", routeObserve{
-				Log: routeObserveLog{
-					Name: ref("stdout"),
+			prefix(
+				"/",
+				routeObserve{
+					Log: routeObserveLog{
+						Name: ref("stdout"),
+					},
 				},
-			}),
+				routeAuth{},
+			),
 		},
 		Clusters: defaultClusters(),
 		Observe: observe{
@@ -58,11 +62,15 @@ func Test_NewYaml_ping_log(t *testing.T) {
 func Test_NewYaml_ping_prom(t *testing.T) {
 	expected := &Yaml{
 		Routes: []Route{
-			prefix("/", routeObserve{
-				Prom: routeObserveProm{
-					Name: ref("default"),
+			prefix(
+				"/",
+				routeObserve{
+					Prom: routeObserveProm{
+						Name: ref("default"),
+					},
 				},
-			}),
+				routeAuth{},
+			),
 		},
 		Clusters: defaultClusters(),
 		Observe: observe{
@@ -80,6 +88,32 @@ func Test_NewYaml_ping_prom(t *testing.T) {
 	}
 
 	test(t, "ping_prom.yaml", expected)
+}
+
+func Test_NewYaml_ping_anonymous(t *testing.T) {
+	expected := &Yaml{
+		Routes: []Route{
+			prefix(
+				"/",
+				routeObserve{},
+				routeAuth{
+					KeyAuth: &routeKeyAuth{
+						Metadata:        "x-apikey",
+						Anonymous:       ref("anonymous_users"),
+						HideCredentials: true,
+					},
+				},
+			),
+		},
+		Clusters: defaultClusters(),
+		Clients: []Client{
+			client("anonymous_users"),
+			client("admin_users", "ure3Wee2", "shae5Aig"),
+			client("developers", "Pae4shua"),
+		},
+	}
+
+	test(t, "ping_anonymous.yaml", expected)
 }
 
 func ref(s string) *string {
@@ -107,19 +141,28 @@ func defaultClusters() []Cluster {
 	}
 }
 
-func prefix(s string, observe routeObserve) Route {
+func client(name string, keys ...string) Client {
+	return Client{
+		Name: name,
+		Keys: keys,
+	}
+}
+
+func prefix(s string, observe routeObserve, auth routeAuth) Route {
 	return Route{
 		Method:  routeMethod{Prefix: &s},
 		Cluster: routeCluster{Name: "local"},
 		Observe: observe,
+		Auth:    auth,
 	}
 }
 
-func eq(s string, observe routeObserve) Route {
+func eq(s string, observe routeObserve, auth routeAuth) Route {
 	return Route{
 		Method:  routeMethod{Equal: &s},
 		Cluster: routeCluster{Name: "local"},
 		Observe: observe,
+		Auth:    auth,
 	}
 }
 

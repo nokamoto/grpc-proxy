@@ -1,0 +1,25 @@
+routes:
+  - method:
+      prefix: /
+    cluster:
+      name: local
+    auth:
+      key_auth:
+        metadata: x-apikey
+        anonymous: anonymous_users
+        hide_credentials: yes
+
+clusters:
+  - name: local
+    round_robin:
+      - localhost:9002
+
+clients:
+  - name: anonymous_users
+  - name: admin_users
+    keys:
+      - ure3Wee2
+      - shae5Aig
+  - name: developers
+    keys:
+      - Pae4shua
